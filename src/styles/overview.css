@@ -1,0 +1,117 @@
+.overview-tab {
+  height: 100%;
+}
+.overview-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+}
+.overview-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.sub-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.sub-stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--smoke);
+}
+.sub-stat-row span:last-child {
+  color: var(--ash);
+  font-family: var(--font-mono);
+}
+
+.stats-row {
+  display: flex;
+  gap: 16px;
+}
+
+.top-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+}
+.top-shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 4px 0;
+}
+.count-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--smoke);
+  margin-top: 10px;
+}
+
+.gap-day-card {
+  border: 1px solid var(--ember);
+  background: linear-gradient(135deg, var(--surface) 0%, #1a1a0d 100%);
+}
+.gap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.power-pct {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ember);
+}
+.gap-desc {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--ash);
+  margin: 12px 0;
+}
+.gap-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+.gap-app-tag {
+  background: var(--surface2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--smoke);
+}
+.cta-button {
+  background: var(--ember);
+  color: var(--bg);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
+  transition: transform 0.2s ease;
+}
+.cta-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--smoke);
+  font-style: italic;
+}
