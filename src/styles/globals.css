@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:            #0D0D0D;
+  --surface:       #161616;
+  --surface2:      #1E1E1E;
+  --border:        #2A2A2A;
+  --ember:         #F5A623;
+  --ember-glow:    rgba(245, 166, 35, 0.15);
+  --flame:         #FF6B35;
+  --ash:           #E8E8E8;
+  --smoke:         #666666;
+  --unlocked:      #4ADE80;
+  --unlocked-glow: rgba(74, 222, 128, 0.12);
+  --radius-sm:     6px;
+  --radius-md:     10px;
+  --radius-lg:     14px;
+  --font-display:  'Space Grotesk', sans-serif;
+  --font-ui:       'Inter', sans-serif;
+  --font-mono:     'JetBrains Mono', monospace;
+}
+
+html, body, #root { height: 100%; background: var(--bg); color: var(--ash); }
+
+body {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  overflow: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--smoke); }
+
+/* Section labels */
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--smoke);
+}
+
+/* Transitions */
+* { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+button, [role="button"] { cursor: pointer; border: none; background: none; color: inherit; }
