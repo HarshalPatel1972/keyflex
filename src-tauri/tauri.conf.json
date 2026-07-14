@@ -44,10 +44,7 @@
     ]
   },
   "plugins": {
-    "notification": {},
-    "autostart": {
-      "macOSLauncher": "LaunchAgent",
-      "args": ["--autostart"]
-    }
+    "notification": null,
+    "autostart": null
   }
 }

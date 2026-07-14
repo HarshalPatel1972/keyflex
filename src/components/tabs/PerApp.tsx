@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { api, ShortcutEntry, onShortcutRecorded } from "../../lib/ipc";
 import { ShortcutRow } from "../ui/ShortcutRow";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, AreaChart, Area
+  AreaChart, Area
 } from 'recharts';
 
 export const PerApp: React.FC = () => {

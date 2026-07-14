@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { api, onShortcutRecorded, TodayStats, EfficiencyScore, ShortcutEntry, GapItem } from "../../lib/ipc";
 import { ScoreRing } from "../ui/ScoreRing";
 import { StreakDisplay } from "../ui/StreakDisplay";

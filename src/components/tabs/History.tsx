@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { api, DayActivity, onShortcutRecorded } from "../../lib/ipc";
 
 export const History: React.FC = () => {

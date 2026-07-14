@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { api, GapItem } from "../../lib/ipc";
 import { ShortcutRow } from "../ui/ShortcutRow";
 
@@ -56,8 +56,8 @@ export const GapAnalysis: React.FC = () => {
             <div className="gap-card-body">
               <h4 className="gap-card-title">{gap.description}</h4>
               <div className="power-bar-container">
-                <div className="power-bar-fill" style={{ width: `${gap.powerUserPct}%` }} />
-                <span className="power-label">{gap.powerUserPct}% of power users</span>
+                <div className="power-bar-fill" style={{ width: `${gap.power_user_pct}%` }} />
+                <span className="power-label">{gap.power_user_pct}% of power users</span>
               </div>
               <p className="gap-tip">"Your most powerful shortcut. Opens everything."</p>
             </div>

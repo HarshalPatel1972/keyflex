@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { api, onShortcutRecorded } from "../../lib/ipc";
 import { HeatLegend } from "../ui/HeatLegend";
 
