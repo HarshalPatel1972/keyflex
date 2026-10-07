@@ -70,6 +70,8 @@ pub struct State {
     pub cheers: u32,
     /// When we last celebrated, seconds since the Unix epoch.
     pub last_cheer: u64,
+    /// Steps through the character's faces so they rotate.
+    pub faces: u32,
 }
 
 impl State {

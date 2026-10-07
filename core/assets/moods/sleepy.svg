@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#4FE39A"/>
-      <stop offset="1" stop-color="#12B76A"/>
+      <stop offset="0" stop-color="#A3AEFF"/>
+      <stop offset="1" stop-color="#6573EE"/>
     </linearGradient>
     <clipPath id="left-eye"><ellipse cx="186" cy="214" rx="62" ry="70"/></clipPath>
     <clipPath id="right-eye"><ellipse cx="326" cy="214" rx="62" ry="70"/></clipPath>
   </defs>
-  <rect x="32" y="60" width="448" height="420" rx="112" fill="#0A7A45"/>
-  <rect x="32" y="44" width="448" height="408" rx="112" fill="#0E9F5B"/>
+  <rect x="32" y="60" width="448" height="420" rx="112" fill="#3643A6"/>
+  <rect x="32" y="44" width="448" height="408" rx="112" fill="#4D5AD0"/>
   <rect x="66" y="44" width="380" height="350" rx="88" fill="url(#top)"/>
-  <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
-  <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
-  <path d="M132 212 Q186 258 240 212" fill="none" stroke="#062A18" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M272 212 Q326 258 380 212" fill="none" stroke="#062A18" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
-  <ellipse cx="256" cy="322" rx="16" ry="20" fill="#053D22"/>
+  <ellipse cx="124" cy="296" rx="30" ry="20" fill="#C9A0FF" opacity="0.5"/>
+  <ellipse cx="388" cy="296" rx="30" ry="20" fill="#C9A0FF" opacity="0.5"/>
+  <path d="M132 212 Q186 258 240 212" fill="none" stroke="#0B1A14" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M272 212 Q326 258 380 212" fill="none" stroke="#0B1A14" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="256" cy="322" rx="16" ry="20" fill="#1A2260"/>
   <path d="M372 62 h46 l-46 50 h46" fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M318 104 h28 l-28 30 h28" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

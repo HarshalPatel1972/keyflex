@@ -1,27 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#4FE39A"/>
-      <stop offset="1" stop-color="#12B76A"/>
+      <stop offset="0" stop-color="#8CCBFF"/>
+      <stop offset="1" stop-color="#4A97FF"/>
     </linearGradient>
     <clipPath id="left-eye"><ellipse cx="186" cy="214" rx="62" ry="70"/></clipPath>
     <clipPath id="right-eye"><ellipse cx="326" cy="214" rx="62" ry="70"/></clipPath>
   </defs>
-  <rect x="32" y="60" width="448" height="420" rx="112" fill="#0A7A45"/>
-  <rect x="32" y="44" width="448" height="408" rx="112" fill="#0E9F5B"/>
+  <rect x="32" y="60" width="448" height="420" rx="112" fill="#1E57B8"/>
+  <rect x="32" y="44" width="448" height="408" rx="112" fill="#2F78E6"/>
   <rect x="66" y="44" width="380" height="350" rx="88" fill="url(#top)"/>
-  <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
-  <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
+  <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FF9DB0" opacity="0.5"/>
+  <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FF9DB0" opacity="0.5"/>
   <ellipse cx="186" cy="218" rx="66" ry="76" fill="#FFFFFF"/>
-  <circle cx="186" cy="216" r="48" fill="#062A18"/>
+  <circle cx="186" cy="216" r="48" fill="#0B1A14"/>
   <circle cx="204" cy="194" r="17" fill="#FFFFFF"/>
   <circle cx="170" cy="240" r="9" fill="#FFFFFF"/>
   <ellipse cx="326" cy="218" rx="66" ry="76" fill="#FFFFFF"/>
-  <circle cx="326" cy="216" r="48" fill="#062A18"/>
+  <circle cx="326" cy="216" r="48" fill="#0B1A14"/>
   <circle cx="344" cy="194" r="17" fill="#FFFFFF"/>
   <circle cx="310" cy="240" r="9" fill="#FFFFFF"/>
-  <path d="M134 124 L222 96" fill="none" stroke="#0A6E3E" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M290 96 L378 124" fill="none" stroke="#0A6E3E" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M228 336 Q256 314 284 336" fill="none" stroke="#053D22" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M134 124 L222 96" fill="none" stroke="#1A4A9E" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M290 96 L378 124" fill="none" stroke="#1A4A9E" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M228 336 Q256 314 284 336" fill="none" stroke="#0D2E66" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M392 262 Q410 296 392 308 Q374 296 392 262 Z" fill="#A9DCFF"/>
 </svg>

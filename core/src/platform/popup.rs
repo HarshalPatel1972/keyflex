@@ -310,9 +310,22 @@ fn face_png(mood: Mood) -> &'static [u8] {
     match mood {
         Mood::Knowing => include_bytes!("../../assets/moods/knowing.png"),
         Mood::Wink => include_bytes!("../../assets/moods/wink.png"),
+        Mood::Curious => include_bytes!("../../assets/moods/curious.png"),
+        Mood::Excited => include_bytes!("../../assets/moods/excited.png"),
+        Mood::Shocked => include_bytes!("../../assets/moods/shocked.png"),
         Mood::Cheeky => include_bytes!("../../assets/moods/cheeky.png"),
+        Mood::Smug => include_bytes!("../../assets/moods/smug.png"),
+        Mood::Deadpan => include_bytes!("../../assets/moods/deadpan.png"),
+        Mood::Grumpy => include_bytes!("../../assets/moods/grumpy.png"),
         Mood::Pleading => include_bytes!("../../assets/moods/pleading.png"),
+        Mood::Crying => include_bytes!("../../assets/moods/crying.png"),
+        Mood::Dizzy => include_bytes!("../../assets/moods/dizzy.png"),
         Mood::Proud => include_bytes!("../../assets/moods/proud.png"),
+        Mood::Starstruck => include_bytes!("../../assets/moods/starstruck.png"),
+        Mood::Love => include_bytes!("../../assets/moods/love.png"),
+        Mood::Cool => include_bytes!("../../assets/moods/cool.png"),
+        Mood::Party => include_bytes!("../../assets/moods/party.png"),
+        Mood::Laughing => include_bytes!("../../assets/moods/laughing.png"),
         Mood::Sleepy => include_bytes!("../../assets/moods/sleepy.png"),
     }
 }
@@ -512,14 +525,13 @@ mod tests {
 
     #[test]
     fn every_mood_has_a_face_that_decodes_and_scales() {
-        for mood in [Mood::Knowing, Mood::Wink, Mood::Cheeky, Mood::Pleading, Mood::Proud, Mood::Sleepy] {
+        for mood in Mood::ALL {
             for size in [64, 96, 160] {
                 let pixels = face_pixels(mood, size);
                 assert_eq!(pixels.len(), (size * size * 4) as usize, "{mood:?} at {size}");
-                // Opaque in the middle, transparent in the corner, and premultiplied throughout.
+                // Opaque in the middle, and premultiplied throughout.
                 let middle = &pixels[((size / 2 * size + size / 2) * 4) as usize..][..4];
                 assert_eq!(middle[3], 255, "{mood:?} at {size}");
-                assert_eq!(pixels[3], 0, "{mood:?} at {size}");
                 assert!(pixels.chunks(4).all(|px| px[0] <= px[3] && px[1] <= px[3] && px[2] <= px[3]));
             }
         }

@@ -160,9 +160,22 @@ fn tray_face(mood: Mood) -> &'static [u8] {
     match mood {
         Mood::Knowing => include_bytes!("../icons/tray/knowing.png"),
         Mood::Wink => include_bytes!("../icons/tray/wink.png"),
+        Mood::Curious => include_bytes!("../icons/tray/curious.png"),
+        Mood::Excited => include_bytes!("../icons/tray/excited.png"),
+        Mood::Shocked => include_bytes!("../icons/tray/shocked.png"),
         Mood::Cheeky => include_bytes!("../icons/tray/cheeky.png"),
+        Mood::Smug => include_bytes!("../icons/tray/smug.png"),
+        Mood::Deadpan => include_bytes!("../icons/tray/deadpan.png"),
+        Mood::Grumpy => include_bytes!("../icons/tray/grumpy.png"),
         Mood::Pleading => include_bytes!("../icons/tray/pleading.png"),
+        Mood::Crying => include_bytes!("../icons/tray/crying.png"),
+        Mood::Dizzy => include_bytes!("../icons/tray/dizzy.png"),
         Mood::Proud => include_bytes!("../icons/tray/proud.png"),
+        Mood::Starstruck => include_bytes!("../icons/tray/starstruck.png"),
+        Mood::Love => include_bytes!("../icons/tray/love.png"),
+        Mood::Cool => include_bytes!("../icons/tray/cool.png"),
+        Mood::Party => include_bytes!("../icons/tray/party.png"),
+        Mood::Laughing => include_bytes!("../icons/tray/laughing.png"),
         Mood::Sleepy => include_bytes!("../icons/tray/sleepy.png"),
     }
 }

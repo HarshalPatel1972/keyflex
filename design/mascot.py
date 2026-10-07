@@ -37,7 +37,7 @@ def legs(lift=0):
 
 def figure(mood, behind, in_front, lift=0, tilt=0):
     """The keycap body with a face, limbs behind and in front of it."""
-    face = moods.BODY + moods.MOODS[mood]
+    face = moods.inner(mood)
     shadow_width = 150 - lift * 1.2
     return f'''<svg viewBox="0 0 512 540" width="300" height="316">
   <ellipse cx="256" cy="506" rx="{shadow_width}" ry="16" fill="#000" opacity="0.22"/>

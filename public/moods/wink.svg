@@ -13,9 +13,9 @@
   <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
   <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
   <ellipse cx="186" cy="214" rx="62" ry="70" fill="#FFFFFF"/>
-  <circle cx="198" cy="208" r="36" fill="#062A18"/>
+  <circle cx="198" cy="208" r="36" fill="#0B1A14"/>
   <circle cx="212" cy="194" r="13" fill="#FFFFFF"/>
-  <path d="M272 222 Q326 168 380 222" fill="none" stroke="#062A18" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M272 222 Q326 168 380 222" fill="none" stroke="#0B1A14" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M140 118 L224 112" fill="none" stroke="#0A6E3E" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M212 304 Q256 364 300 304 Z" fill="#053D22" stroke="#053D22" stroke-width="14" stroke-linejoin="round"/>
 </svg>

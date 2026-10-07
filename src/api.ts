@@ -14,7 +14,26 @@ export interface Tip {
 
 export type Theme = "system" | "light" | "dark";
 
-export type Mood = "knowing" | "wink" | "cheeky" | "pleading" | "proud" | "sleepy";
+export type Mood =
+  | "knowing"
+  | "wink"
+  | "curious"
+  | "excited"
+  | "shocked"
+  | "cheeky"
+  | "smug"
+  | "deadpan"
+  | "grumpy"
+  | "pleading"
+  | "crying"
+  | "dizzy"
+  | "proud"
+  | "starstruck"
+  | "love"
+  | "cool"
+  | "party"
+  | "laughing"
+  | "sleepy";
 
 /** How the character is feeling overall. */
 export interface Status {

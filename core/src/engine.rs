@@ -11,23 +11,86 @@ const DAY: u64 = 24 * 60 * 60;
 /// How long the character stays visibly pleased after a celebration.
 const PROUD_FOR: u64 = 6 * 60 * 60;
 
-/// The character's expression.
+/// The character's expression. Each has its own colour, as emoji do.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Mood {
     /// Resting face: "I know a trick."
     Knowing,
-    /// First time a tip is shown.
+    /// First showing: "psst".
     Wink,
-    /// Second time: "we talked about this."
+    /// First showing: "ooh, what's this?"
+    Curious,
+    /// First showing: "I know this one!"
+    Excited,
+    /// Second showing: "you did what, the long way?"
+    Shocked,
+    /// Second showing: "we talked about this."
     Cheeky,
-    /// Last time, and while tips keep being ignored.
+    /// Second showing: looking away, one corner of the mouth up.
+    Smug,
+    /// Second showing: "..."
+    Deadpan,
+    /// Last showing: "hmph".
+    Grumpy,
+    /// Last showing, and while tips keep being ignored.
     Pleading,
+    /// Last showing: full waterworks.
+    Crying,
+    /// Last showing: "I can't watch."
+    Dizzy,
     /// The user used a shortcut we taught.
     Proud,
+    /// Celebration: stars in its eyes.
+    Starstruck,
+    /// Celebration: hearts for eyes.
+    Love,
+    /// Celebration: sunglasses on.
+    Cool,
+    /// A shortcut has stuck for good.
+    Party,
+    /// Celebration: tears of joy.
+    Laughing,
     /// Paused.
     Sleepy,
 }
+
+impl Mood {
+    pub const ALL: [Mood; 19] = [Mood::Knowing, Mood::Wink, Mood::Curious, Mood::Excited, Mood::Shocked, Mood::Cheeky, Mood::Smug, Mood::Deadpan, Mood::Grumpy, Mood::Pleading, Mood::Crying, Mood::Dizzy, Mood::Proud, Mood::Starstruck, Mood::Love, Mood::Cool, Mood::Party, Mood::Laughing, Mood::Sleepy];
+
+    /// The mood's name, which is also the name of its image file.
+    pub fn name(self) -> &'static str {
+        match self {
+            Mood::Knowing => "knowing",
+            Mood::Wink => "wink",
+            Mood::Curious => "curious",
+            Mood::Excited => "excited",
+            Mood::Shocked => "shocked",
+            Mood::Cheeky => "cheeky",
+            Mood::Smug => "smug",
+            Mood::Deadpan => "deadpan",
+            Mood::Grumpy => "grumpy",
+            Mood::Pleading => "pleading",
+            Mood::Crying => "crying",
+            Mood::Dizzy => "dizzy",
+            Mood::Proud => "proud",
+            Mood::Starstruck => "starstruck",
+            Mood::Love => "love",
+            Mood::Cool => "cool",
+            Mood::Party => "party",
+            Mood::Laughing => "laughing",
+            Mood::Sleepy => "sleepy",
+        }
+    }
+}
+
+// The faces a tip can wear at each showing, and a celebration at each stage.
+// They are used in rotation, so the same face never appears twice running.
+const FIRST_FACES: &[Mood] = &[Mood::Wink, Mood::Curious, Mood::Excited];
+const SECOND_FACES: &[Mood] = &[Mood::Cheeky, Mood::Smug, Mood::Deadpan, Mood::Shocked];
+const LAST_FACES: &[Mood] = &[Mood::Pleading, Mood::Crying, Mood::Grumpy, Mood::Dizzy];
+const FIRST_USE_FACES: &[Mood] = &[Mood::Proud, Mood::Starstruck, Mood::Laughing, Mood::Cool];
+const LEARNED_FACES: &[Mood] = &[Mood::Party, Mood::Love, Mood::Starstruck];
 
 /// Said the first time the user presses a shortcut after being shown its tip.
 const FIRST_USE_CHEERS: &[&str] = &[
@@ -303,7 +366,8 @@ impl Engine {
         self.state.cheers += 1;
         self.state.last_cheer = now;
         self.dirty = true;
-        Shown { id: rule.id.clone(), keys, line, mood: Mood::Proud, can_mute: false }
+        let mood = next_face(&mut self.state, if learned { LEARNED_FACES } else { FIRST_USE_FACES });
+        Shown { id: rule.id.clone(), keys, line, mood, can_mute: false }
     }
 
     /// Apply the policy to a rule whose steps were just completed.
@@ -333,17 +397,26 @@ impl Engine {
 
         // The lines, like the face, escalate: a wink, then cheek, then a last plea.
         let line = rule.lines[tip.shown as usize % rule.lines.len()].clone();
-        let mood = match tip.shown {
-            0 => Mood::Wink,
-            1 => Mood::Cheeky,
-            _ => Mood::Pleading,
+        let faces = match tip.shown {
+            0 => FIRST_FACES,
+            1 => SECOND_FACES,
+            _ => LAST_FACES,
         };
         tip.shown += 1;
         tip.last_shown = now;
         state.recent_shows.push(now);
         *dirty = true;
+        let mood = next_face(state, faces);
         Some(Shown { id: rule.id.clone(), keys: rule.shortcut.label(), line, mood, can_mute: true })
     }
+}
+
+/// The next face from `faces`. One counter steps through every set, so two
+/// popups in a row never wear the same face.
+fn next_face(state: &mut State, faces: &[Mood]) -> Mood {
+    let mood = faces[state.faces as usize % faces.len()];
+    state.faces = state.faces.wrapping_add(1);
+    mood
 }
 
 #[cfg(test)]
@@ -486,7 +559,7 @@ mod tests {
         assert_eq!(shown.id, "downloads");
         assert_eq!(shown.keys, "Ctrl + J");
         assert_eq!(shown.line, "first line");
-        assert_eq!(shown.mood, Mood::Wink);
+        assert!(FIRST_FACES.contains(&shown.mood));
         assert!(shown.can_mute);
         assert!(engine.take_dirty());
         assert!(!engine.take_dirty());
@@ -573,26 +646,44 @@ mod tests {
         let ctrl_j = key("chrome.exe", "", "Ctrl+J");
         assert_eq!(engine.status(0), Status { mood: Mood::Knowing, waiting_on: None });
 
-        assert_eq!(engine.handle(&downloads(), 0).unwrap().mood, Mood::Wink);
-        assert_eq!(engine.handle(&downloads(), 1).unwrap().mood, Mood::Cheeky);
+        assert!(FIRST_FACES.contains(&engine.handle(&downloads(), 0).unwrap().mood));
+        assert!(SECOND_FACES.contains(&engine.handle(&downloads(), 1).unwrap().mood));
         // Shown twice and never tried: the tray face starts pleading.
         assert_eq!(engine.status(2), Status { mood: Mood::Pleading, waiting_on: Some("Ctrl + J".into()) });
 
         // First use is celebrated, and cannot be muted.
         let cheer = engine.handle(&ctrl_j, 3).unwrap();
-        assert_eq!(cheer.mood, Mood::Proud);
+        assert!(FIRST_USE_FACES.contains(&cheer.mood));
         assert!(!cheer.can_mute);
         assert!(cheer.line.contains("Ctrl+J"), "{}", cheer.line);
         assert_eq!(engine.status(4).mood, Mood::Proud);
 
         // Second use graduates the tip, naming what it will stop mentioning.
         let graduated = engine.handle(&ctrl_j, 5).unwrap();
+        assert!(LEARNED_FACES.contains(&graduated.mood));
         assert!(graduated.line.contains("Ctrl+J"), "{}", graduated.line);
         assert_eq!(engine.handle(&downloads(), 6), None);
         assert_eq!(engine.handle(&ctrl_j, 7), None, "no more celebrations once learned");
 
         // The pride wears off.
         assert_eq!(engine.status(5 + PROUD_FOR).mood, Mood::Knowing);
+    }
+
+    #[test]
+    fn the_same_face_never_appears_twice_running() {
+        // In demo mode every match shows a tip, so one tip walks through all its stages.
+        let mut engine = wide();
+        let copy = click("gimp.exe", "", "copy", Control::MenuItem);
+        let faces: Vec<Mood> = (0..12).map(|at| engine.handle(&copy, at).unwrap().mood).collect();
+        assert!(faces.windows(2).all(|pair| pair[0] != pair[1]), "{faces:?}");
+        // And the whole set gets used, not just one or two of them.
+        assert!(LAST_FACES.iter().all(|face| faces.contains(face)), "{faces:?}");
+    }
+
+    #[test]
+    fn every_mood_has_a_distinct_name() {
+        let names: std::collections::HashSet<_> = Mood::ALL.iter().map(|mood| mood.name()).collect();
+        assert_eq!(names.len(), Mood::ALL.len());
     }
 
     #[test]

@@ -13,10 +13,10 @@
   <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
   <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
   <ellipse cx="186" cy="214" rx="62" ry="70" fill="#FFFFFF"/>
-  <circle cx="198" cy="208" r="36" fill="#062A18"/>
+  <circle cx="198" cy="208" r="36" fill="#0B1A14"/>
   <circle cx="212" cy="194" r="13" fill="#FFFFFF"/>
   <ellipse cx="326" cy="214" rx="62" ry="70" fill="#FFFFFF"/>
-  <circle cx="338" cy="208" r="36" fill="#062A18"/>
+  <circle cx="338" cy="208" r="36" fill="#0B1A14"/>
   <circle cx="352" cy="194" r="13" fill="#FFFFFF"/>
   <path d="M140 124 L224 128" fill="none" stroke="#0A6E3E" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M288 112 L372 92" fill="none" stroke="#0A6E3E" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>

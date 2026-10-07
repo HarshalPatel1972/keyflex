@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE27A"/>
+      <stop offset="1" stop-color="#FFC02E"/>
+    </linearGradient>
+    <clipPath id="left-eye"><ellipse cx="186" cy="214" rx="62" ry="70"/></clipPath>
+    <clipPath id="right-eye"><ellipse cx="326" cy="214" rx="62" ry="70"/></clipPath>
+  </defs>
+  <rect x="32" y="60" width="448" height="420" rx="112" fill="#C27F00"/>
+  <rect x="32" y="44" width="448" height="408" rx="112" fill="#F0A400"/>
+  <rect x="66" y="44" width="380" height="350" rx="88" fill="url(#top)"/>
+  <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FF8A5C" opacity="0.5"/>
+  <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FF8A5C" opacity="0.5"/>
+  <ellipse cx="186" cy="214" rx="62" ry="70" fill="#FFFFFF"/>
+  <circle cx="186" cy="214" r="20" fill="#0B1A14"/>
+  <circle cx="200" cy="200" r="8" fill="#FFFFFF"/>
+  <ellipse cx="326" cy="214" rx="62" ry="70" fill="#FFFFFF"/>
+  <circle cx="326" cy="214" r="20" fill="#0B1A14"/>
+  <circle cx="340" cy="200" r="8" fill="#FFFFFF"/>
+  <path d="M140 100 L224 90" fill="none" stroke="#9C6500" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M288 90 L372 100" fill="none" stroke="#9C6500" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="256" cy="332" rx="26" ry="34" fill="#6B4300"/>
+</svg>

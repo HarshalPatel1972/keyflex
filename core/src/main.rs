@@ -5,7 +5,7 @@
 //!   keyflex-core --verbose       print each inspected click and each tip
 //!   keyflex-core --log FILE      also append those lines to FILE
 //!   keyflex-core --preview MOOD  show one sample popup with that face
-//!                                (wink, cheeky, pleading, proud) and wait
+//!                                (any mood name, e.g. wink, grumpy, party) and wait
 
 use keyflex_core::engine::{Engine, Mood, Policy};
 use keyflex_core::platform::runtime::{self, Options};
@@ -14,13 +14,19 @@ use keyflex_core::rules;
 use keyflex_core::state::State;
 
 /// (face, tip id or "" for a celebration, line) for `--preview`.
-fn sample(mood: &str) -> Option<(Mood, &'static str, &'static str)> {
+fn sample(name: &str) -> Option<(Mood, &'static str, &'static str)> {
+    let mood = Mood::ALL.into_iter().find(|mood| mood.name() == name)?;
     Some(match mood {
-        "wink" => (Mood::Wink, "browser.downloads", "Psst. Two clicks to reach Downloads? Ctrl+J just walks in the front door."),
-        "cheeky" => (Mood::Cheeky, "browser.downloads", "The menu again? Ctrl+J is right there. I am not mad. I am just... watching."),
-        "pleading" => (Mood::Pleading, "browser.downloads", "Last time I will say it: Ctrl+J opens Downloads. After this, I suffer in silence."),
-        "proud" => (Mood::Proud, "", "Ctrl+J! You actually did it. I am not crying, you are crying."),
-        _ => return None,
+        Mood::Proud | Mood::Starstruck | Mood::Laughing | Mood::Cool | Mood::Party | Mood::Love => {
+            (mood, "", "Ctrl+J! You actually did it. I am not crying, you are crying.")
+        }
+        Mood::Pleading | Mood::Crying | Mood::Grumpy | Mood::Dizzy => {
+            (mood, "browser.downloads", "Last time I will say it: Ctrl+J opens Downloads. After this, I suffer in silence.")
+        }
+        Mood::Cheeky | Mood::Smug | Mood::Deadpan | Mood::Shocked => {
+            (mood, "browser.downloads", "The menu again? Ctrl+J is right there. I am not mad. I am just... watching.")
+        }
+        _ => (mood, "browser.downloads", "Psst. Two clicks to reach Downloads? Ctrl+J just walks in the front door."),
     })
 }
 

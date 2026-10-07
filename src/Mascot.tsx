@@ -2,9 +2,33 @@ import { useEffect, useId, useRef } from "react";
 import type { Mood } from "./api";
 
 // The same drawing as design/moods.py, but live: it bobs, blinks and watches the cursor.
-const DARK = "#062A18";
-const MOUTH = "#053D22";
-const BROW = "#0A6E3E";
+const DARK = "#0B1A14";
+
+interface Palette {
+  hi: string;
+  lo: string;
+  side: string;
+  edge: string;
+  brow: string;
+  lid: string;
+  cheek: string;
+  mouth: string;
+}
+
+// Colours from design/moods.py, for the moods drawn live here.
+const GREEN: Palette = { hi: "#4FE39A", lo: "#12B76A", side: "#0E9F5B", edge: "#0A7A45", brow: "#0A6E3E", lid: "#2FCB80", cheek: "#FFC53D", mouth: "#053D22" };
+const BLUE: Palette = { hi: "#8CCBFF", lo: "#4A97FF", side: "#2F78E6", edge: "#1E57B8", brow: "#1A4A9E", lid: "#6BB2FF", cheek: "#FF9DB0", mouth: "#0D2E66" };
+const INDIGO: Palette = { hi: "#A3AEFF", lo: "#6573EE", side: "#4D5AD0", edge: "#3643A6", brow: "#2F3A94", lid: "#8490F7", cheek: "#C9A0FF", mouth: "#1A2260" };
+
+/** Moods with a live drawing. Every other mood is shown as its still image, gently bobbing. */
+const LIVE: Partial<Record<Mood, Palette>> = {
+  knowing: GREEN,
+  wink: GREEN,
+  cheeky: GREEN,
+  proud: GREEN,
+  pleading: BLUE,
+  sleepy: INDIGO,
+};
 
 /** How far, in drawing units, the pupils can travel towards the cursor. */
 const LOOK_REACH = 13;
@@ -45,7 +69,13 @@ export function Mascot({ mood, size = 120, follow = true, className = "" }: Prop
     };
   }, [follow]);
 
-  const stroke = (d: string, width = 20, color = BROW) => (
+  const palette = LIVE[mood];
+  if (!palette) {
+    return <img className={`mascot ${className}`} src={`/moods/${mood}.svg`} width={size} height={size} alt="" />;
+  }
+  const MOUTH = palette.mouth;
+
+  const stroke = (d: string, width = 20, color = palette.brow) => (
     <path d={d} fill="none" stroke={color} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round" />
   );
   const eye = (x: number, dx = 12, dy = -6, pupil = 36) => (
@@ -69,8 +99,8 @@ export function Mascot({ mood, size = 120, follow = true, className = "" }: Prop
     >
       <defs>
         <linearGradient id={`${id}top`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#4FE39A" />
-          <stop offset="1" stopColor="#12B76A" />
+          <stop offset="0" stopColor={palette.hi} />
+          <stop offset="1" stopColor={palette.lo} />
         </linearGradient>
         <clipPath id={`${id}left`}>
           <ellipse cx="186" cy="214" rx="62" ry="70" />
@@ -80,11 +110,11 @@ export function Mascot({ mood, size = 120, follow = true, className = "" }: Prop
         </clipPath>
       </defs>
 
-      <rect x="32" y="60" width="448" height="420" rx="112" fill="#0A7A45" />
-      <rect x="32" y="44" width="448" height="408" rx="112" fill="#0E9F5B" />
+      <rect x="32" y="60" width="448" height="420" rx="112" fill={palette.edge} />
+      <rect x="32" y="44" width="448" height="408" rx="112" fill={palette.side} />
       <rect x="66" y="44" width="380" height="350" rx="88" fill={`url(#${id}top)`} />
-      <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5" />
-      <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5" />
+      <ellipse cx="124" cy="296" rx="30" ry="20" fill={palette.cheek} opacity="0.5" />
+      <ellipse cx="388" cy="296" rx="30" ry="20" fill={palette.cheek} opacity="0.5" />
 
       {mood === "knowing" && (
         <>
@@ -111,8 +141,8 @@ export function Mascot({ mood, size = 120, follow = true, className = "" }: Prop
         <>
           {eye(186, 16, 14, 32)}
           {eye(326, 16, 14, 32)}
-          <rect x="110" y="130" width="152" height="78" fill="#2FCB80" clipPath={`url(#${id}left)`} />
-          <rect x="250" y="130" width="152" height="78" fill="#2FCB80" clipPath={`url(#${id}right)`} />
+          <rect x="110" y="130" width="152" height="78" fill={palette.lid} clipPath={`url(#${id}left)`} />
+          <rect x="250" y="130" width="152" height="78" fill={palette.lid} clipPath={`url(#${id}right)`} />
           {stroke("M126 208 L246 208", 12, DARK)}
           {stroke("M266 208 L386 208", 12, DARK)}
           {stroke("M136 116 L228 122")}

@@ -12,10 +12,10 @@
   <rect x="66" y="44" width="380" height="350" rx="88" fill="url(#top)"/>
   <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
   <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
-  <path d="M132 228 Q186 158 240 228" fill="none" stroke="#062A18" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M272 228 Q326 158 380 228" fill="none" stroke="#062A18" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M132 228 Q186 158 240 228" fill="none" stroke="#0B1A14" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M272 228 Q326 158 380 228" fill="none" stroke="#0B1A14" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M198 290 Q256 384 314 290 Z" fill="#053D22" stroke="#053D22" stroke-width="14" stroke-linejoin="round"/>
   <ellipse cx="256" cy="336" rx="24" ry="13" fill="#FF8A9A"/>
-  <path d="M410 70 C 414 96, 420 102, 446 106 C 420 110, 414 116, 410 142 C 406 116, 400 110, 374 106 C 400 102, 406 96, 410 70 Z" fill="#FFE27A"/>
-  <path d="M112 96 C 114 110, 118 114, 132 116 C 118 118, 114 122, 112 136 C 110 122, 106 118, 92 116 C 106 114, 110 110, 112 96 Z" fill="#FFE27A"/>
+  <path d="M410 70 C 417.92 98.08, 417.92 98.08, 446 106 C 417.92 113.92, 417.92 113.92, 410 142 C 402.08 113.92, 402.08 113.92, 374 106 C 402.08 98.08, 402.08 98.08, 410 70 Z" fill="#FFE27A"/>
+  <path d="M112 96 C 116.4 111.6, 116.4 111.6, 132 116 C 116.4 120.4, 116.4 120.4, 112 136 C 107.6 120.4, 107.6 120.4, 92 116 C 107.6 111.6, 107.6 111.6, 112 96 Z" fill="#FFE27A"/>
 </svg>
