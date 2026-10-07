@@ -12,6 +12,17 @@ tauri = { version = "2", features = ["tray-icon", "image-png"] }
 tauri-plugin-autostart = "2"
 tauri-plugin-single-instance = "2"
 
+[dependencies.windows]
+version = "0.58"
+features = [
+  "ApplicationModel",
+  "ApplicationModel_Activation",
+  "Foundation",
+  "Win32_Foundation",
+  "Win32_Globalization",
+  "Win32_Storage_Packaging_Appx",
+]
+
 [profile.release]
 opt-level = "s"
 lto = true

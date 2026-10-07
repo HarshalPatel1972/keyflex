@@ -41,6 +41,7 @@ export const api = {
   setAutostart: (enabled: boolean) => invoke<void>("set_autostart", { enabled }),
   previewTip: () => invoke<void>("preview_tip"),
   getStatus: () => invoke<Status>("get_status"),
+  windowsIsEnglish: () => invoke<boolean>("windows_is_english"),
 };
 
 /** Runs `callback` whenever tips or settings change in the background. */

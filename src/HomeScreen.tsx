@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { appName, Status, Tip } from "./api";
+import { useEffect, useState } from "react";
+import { api, appName, Status, Tip } from "./api";
 import { Keys } from "./Keys";
 import { Mascot } from "./Mascot";
 
@@ -36,6 +36,11 @@ function chatter(status: Status, hidden: number): string[] {
 
 export function HomeScreen({ tips, status, onSeeAll }: Props) {
   const [pokes, setPokes] = useState(0);
+  const [english, setEnglish] = useState(true);
+
+  useEffect(() => {
+    void api.windowsIsEnglish().then(setEnglish);
+  }, []);
 
   const learned = tips.filter((tip) => tip.learned).length;
   const found = tips.filter((tip) => tip.shown > 0 || tip.learned).length;
@@ -62,6 +67,16 @@ export function HomeScreen({ tips, status, onSeeAll }: Props) {
           {lines[pokes % lines.length]}
         </div>
       </section>
+
+      {!english && (
+        <section className="card notice">
+          <strong>Heads up: I only understand English menus so far.</strong>
+          <span>
+            Your Windows is in another language, so most tips won't appear yet. Shortcuts opened with the mouse, like
+            Task Manager, still work.
+          </span>
+        </section>
+      )}
 
       <section className="card progress">
         <div className="progress-head">

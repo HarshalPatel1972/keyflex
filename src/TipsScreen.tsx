@@ -53,7 +53,10 @@ function Card({ tip, where, peeked, onPeek }: { tip: Tip; where: string; peeked:
           <kbd>?</kbd>
           <kbd>?</kbd>
         </span>
-        <span className="shortcut-line">Hiding somewhere in {where}. Do it the long way and I'll show you.</span>
+        <span className="shortcut-line">
+          {where === "Everywhere" ? "Hiding in plain sight, in every app." : `Hiding somewhere in ${where}.`} Do it the
+          long way and I'll show you.
+        </span>
         <span className="shortcut-foot">
           <span className="chip">Not found yet</span>
           <span className="peek">Peek</span>

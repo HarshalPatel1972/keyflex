@@ -11,6 +11,12 @@ import { TipsScreen } from "./TipsScreen";
 
 type Screen = "home" | "tips" | "intro" | "settings";
 
+/** The screen named in the address (`#tips`), if any: lets the UI be opened on a given screen. */
+function requestedScreen(): Screen | null {
+  const name = window.location.hash.slice(1);
+  return name === "home" || name === "tips" || name === "intro" || name === "settings" ? name : null;
+}
+
 /** `icon` is the path data of a 20 x 20 outline icon. */
 const TABS: { id: Screen; label: string; icon: string }[] = [
   { id: "home", label: "Home", icon: "M3.5 9.5 10 4l6.5 5.5V16h-4.5v-4h-4v4H3.5z" },
@@ -47,7 +53,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    refresh().then((loaded) => setScreen(loaded.intro_seen ? "home" : "intro"));
+    refresh().then((loaded) => setScreen(loaded.intro_seen ? (requestedScreen() ?? "home") : "intro"));
     const unlisten = onChanged(() => void refresh());
     return () => void unlisten.then((stop) => stop());
   }, [refresh]);

@@ -3,6 +3,7 @@
 //!   keyflex-core                 normal limits, tip history saved to disk
 //!   keyflex-core --demo          no limits and nothing saved, for trying rules out
 //!   keyflex-core --verbose       print each inspected click and each tip
+//!   keyflex-core --log FILE      also append those lines to FILE
 //!   keyflex-core --preview MOOD  show one sample popup with that face
 //!                                (wink, cheeky, pleading, proud) and wait
 
@@ -27,7 +28,9 @@ fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let demo = args.iter().any(|arg| arg == "--demo");
     let verbose = args.iter().any(|arg| arg == "--verbose");
-    let preview = args.iter().position(|arg| arg == "--preview").and_then(|at| args.get(at + 1));
+    let value_of = |flag: &str| args.iter().position(|arg| arg == flag).and_then(|at| args.get(at + 1));
+    let preview = value_of("--preview");
+    let log_path = value_of("--log").map(std::path::PathBuf::from);
 
     let state_path = if demo || preview.is_some() { None } else { State::default_path() };
     let state = state_path.as_deref().map(State::load).unwrap_or_default();
@@ -35,7 +38,7 @@ fn main() {
     let engine = Engine::new(rules::builtin(), state, policy);
 
     watch::make_dpi_aware();
-    let handle = runtime::start(engine, Options { state_path, verbose, on_change: None });
+    let handle = runtime::start(engine, Options { state_path, verbose, log_path, on_change: None });
     if verbose {
         println!("keyflex-core running{}. Ctrl+C to stop.", if demo { " (demo)" } else { "" });
     }

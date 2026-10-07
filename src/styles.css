@@ -534,6 +534,20 @@ kbd {
   }
 }
 
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 22px;
+  padding: 14px 18px;
+  border-color: var(--gold);
+  color: var(--muted);
+}
+
+.notice strong {
+  color: var(--text);
+}
+
 .progress {
   margin-top: 26px;
   padding: 20px 22px;

@@ -2,6 +2,7 @@
 //! popup window, one for looking at clicks and asking the engine.
 
 use std::collections::HashSet;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::mpsc::{channel, Receiver};
 use std::sync::{Arc, Mutex};
@@ -19,6 +20,10 @@ pub struct Options {
     pub state_path: Option<PathBuf>,
     /// Print each inspected click and each tip.
     pub verbose: bool,
+    /// Also append those lines to this file. For checking tips against real
+    /// apps: it records the names of the buttons and menu items clicked, so it
+    /// is never on unless someone asks for it.
+    pub log_path: Option<PathBuf>,
     /// Called after anything the UI displays has changed.
     pub on_change: Option<Box<dyn Fn() + Send + Sync>>,
 }
@@ -26,6 +31,23 @@ pub struct Options {
 struct Shared {
     engine: Mutex<Engine>,
     options: Options,
+}
+
+impl Options {
+    fn note(&self, line: impl FnOnce() -> String) {
+        if !self.verbose && self.log_path.is_none() {
+            return;
+        }
+        let line = line();
+        if self.verbose {
+            println!("{line}");
+        }
+        if let Some(path) = &self.log_path {
+            if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open(path) {
+                let _ = writeln!(file, "{line}");
+            }
+        }
+    }
 }
 
 /// Access to the running engine from other threads, e.g. the settings UI.
@@ -75,9 +97,16 @@ pub fn start(engine: Engine, options: Options) -> Handle {
     let (tx, rx) = channel();
     let worker = handle.clone();
     std::thread::spawn(move || work(rx, worker));
+    let notes = handle.clone();
     std::thread::spawn(move || unsafe {
-        popup::create().expect("failed to create tip popup");
-        watch::install(tx, combos).expect("failed to install input hooks");
+        // Keep going with whatever works: the window and settings are still useful.
+        if let Err(error) = popup::create() {
+            notes.0.options.note(|| format!("tips cannot be shown: {}", error.message()));
+        }
+        if let Err(error) = watch::install(tx, combos) {
+            notes.0.options.note(|| format!("cannot watch for input: {}", error.message()));
+            return;
+        }
         watch::pump();
     });
     handle
@@ -85,8 +114,15 @@ pub fn start(engine: Engine, options: Options) -> Handle {
 
 /// Turn raw input into events, ask the engine, show the tip.
 fn work(rx: Receiver<Raw>, handle: Handle) {
-    let inspector = Inspector::new().expect("UI Automation is unavailable");
-    let verbose = handle.0.options.verbose;
+    let options = &handle.0.options;
+    // Without UI Automation, clicks cannot be read; key and window tips still work.
+    let inspector = match Inspector::new() {
+        Ok(inspector) => Some(inspector),
+        Err(error) => {
+            options.note(|| format!("clicks cannot be inspected: {}", error.message()));
+            None
+        }
+    };
     // Windows already seen at the front; anything else that appears is new.
     let mut seen: HashSet<isize> = watch::open_windows().into_iter().collect();
 
@@ -97,11 +133,9 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
             Raw::Click(point) => {
                 let typing = watch::was_typing();
                 let watching = |app: &str| handle.with(|engine| engine.is_watching(app));
-                inspector.inspect(point, watching).and_then(|clicked| {
+                inspector.as_ref().and_then(|inspector| inspector.inspect(point, watching)).and_then(|clicked| {
                     let (_, window) = watch::foreground();
-                    if verbose {
-                        println!("[{}] {:?} \"{}\"", clicked.app, clicked.control, clicked.name);
-                    }
+                    options.note(|| format!("[{}] {:?} \"{}\"", clicked.app, clicked.control, clicked.name));
                     let action = Action::Click { name: &clicked.name, control: clicked.control };
                     let event = Event { app: &clicked.app, window: &window, typing, class: "", action };
                     handle.with(|engine| engine.handle(&event, now))
@@ -118,9 +152,7 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
                 if seen.insert(hwnd) && by_mouse {
                     let app = watch::app_of_window(hwnd);
                     let class = watch::window_class(hwnd);
-                    if verbose {
-                        println!("[{app}] opened with the mouse ({class})");
-                    }
+                    options.note(|| format!("[{app}] opened with the mouse ({class})"));
                     let event = Event { app: &app, window: "", typing: false, class: &class, action: Action::Opened };
                     handle.with(|engine| engine.handle(&event, now))
                 } else {
@@ -130,9 +162,7 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
         };
 
         if let Some(tip) = shown {
-            if verbose {
-                println!("    >>> {} [{}] {}", tip.id, tip.keys, tip.line);
-            }
+            options.note(|| format!("    >>> {} [{}] {}", tip.id, tip.keys, tip.line));
             let id = if tip.can_mute { tip.id.as_str() } else { "" };
             handle.show_tip(id, &tip.keys, &tip.line, tip.mood);
         }

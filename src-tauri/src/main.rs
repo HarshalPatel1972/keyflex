@@ -4,6 +4,9 @@
 //! The Keyflex app: a tray icon around the core, plus a window that exists
 //! only while it is open, so the background cost stays that of the core alone.
 
+mod startup;
+
+use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use keyflex_core::engine::{Engine, Mood, Policy, Status, TipView};
@@ -14,10 +17,12 @@ use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, CheckMenuItemBuilder, MenuBuilder, MenuItemBuilder};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Manager, RunEvent, WebviewUrl, WebviewWindowBuilder, Wry};
-use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
+use tauri_plugin_autostart::MacosLauncher;
+use windows::Win32::Globalization::GetUserDefaultUILanguage;
 
-/// Passed by the Windows startup entry, so signing in does not open the window.
-const AUTOSTART_ARG: &str = "--autostart";
+/// The primary-language part of a Windows language id, and its value for English.
+const PRIMARY_LANGUAGE_MASK: u16 = 0x3ff;
+const LANG_ENGLISH: u16 = 0x09;
 
 /// The tray face can change without any event (pride wears off), so it is rechecked this often.
 const TRAY_REFRESH: Duration = Duration::from_secs(10 * 60);
@@ -58,15 +63,22 @@ fn get_apps(core: tauri::State<Handle>) -> Vec<String> {
     apps
 }
 
-#[tauri::command]
+// `async` runs these off the main thread: the Store's startup API blocks while it asks Windows.
+#[tauri::command(async)]
 fn get_autostart(app: AppHandle) -> bool {
-    app.autolaunch().is_enabled().unwrap_or(false)
+    startup::is_enabled(&app)
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 fn set_autostart(app: AppHandle, enabled: bool) -> Result<(), String> {
-    let autolaunch = app.autolaunch();
-    if enabled { autolaunch.enable() } else { autolaunch.disable() }.map_err(|e| e.to_string())
+    startup::set_enabled(&app, enabled)
+}
+
+/// Tips match the English names of buttons and menus, so they only work when
+/// Windows itself is displayed in English.
+#[tauri::command]
+fn windows_is_english() -> bool {
+    unsafe { GetUserDefaultUILanguage() & PRIMARY_LANGUAGE_MASK == LANG_ENGLISH }
 }
 
 /// Show what a tip looks like, beside the cursor.
@@ -89,7 +101,12 @@ fn open_window(app: &AppHandle) {
         let _ = window.set_focus();
         return;
     }
-    let built = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
+    // KEYFLEX_SCREEN=tips (or settings, intro) opens straight on that screen, for checking the UI.
+    let page = match std::env::var("KEYFLEX_SCREEN") {
+        Ok(screen) if screen.chars().all(|c| c.is_ascii_lowercase()) => format!("index.html#{screen}"),
+        _ => "index.html".to_string(),
+    };
+    let built = WebviewWindowBuilder::new(app, "main", WebviewUrl::App(page.into()))
         .title("Keyflex")
         .inner_size(1000.0, 680.0)
         .min_inner_size(930.0, 600.0)
@@ -180,7 +197,7 @@ fn main() {
     tauri::Builder::default()
         // A second copy would install a second set of hooks and show every tip twice.
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| open_window(app)))
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![AUTOSTART_ARG])))
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![startup::AUTOSTART_ARG])))
         .setup(|app| {
             let handle = app.handle().clone();
 
@@ -193,7 +210,10 @@ fn main() {
 
             let announcer = handle.clone();
             let on_change: Box<dyn Fn() + Send + Sync> = Box::new(move || announce_change(&announcer));
-            let core = runtime::start(engine, Options { state_path, verbose: false, on_change: Some(on_change) });
+            // KEYFLEX_LOG=<file> records which buttons and menu items are clicked, for checking tips.
+            let log_path = std::env::var_os("KEYFLEX_LOG").map(PathBuf::from);
+            let options = Options { state_path, verbose: false, log_path, on_change: Some(on_change) };
+            let core = runtime::start(engine, options);
             app.manage(core);
 
             setup_tray(&handle, paused)?;
@@ -203,7 +223,7 @@ fn main() {
                 std::thread::sleep(TRAY_REFRESH);
                 refresh_tray(&ticker);
             });
-            if !std::env::args().any(|arg| arg == AUTOSTART_ARG) {
+            if !startup::launched_at_sign_in() {
                 open_window(&handle);
             }
             Ok(())
@@ -218,6 +238,7 @@ fn main() {
             set_autostart,
             preview_tip,
             get_status,
+            windows_is_english,
         ])
         .build(tauri::generate_context!())
         .expect("error starting Keyflex")

@@ -1894,6 +1894,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-autostart",
  "tauri-plugin-single-instance",
+ "windows 0.58.0",
 ]
 
 [[package]]

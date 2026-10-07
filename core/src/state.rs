@@ -78,12 +78,17 @@ impl State {
         Some(PathBuf::from(std::env::var_os("APPDATA")?).join("Keyflex").join("state.json"))
     }
 
-    /// A missing or unreadable file is a fresh start, not an error.
+    /// A missing file is a fresh start. So is an unreadable one, but that file
+    /// is first set aside as `state.unreadable.json` rather than overwritten,
+    /// so the history in it is not lost for good.
     pub fn load(path: &Path) -> State {
-        std::fs::read(path)
-            .ok()
-            .and_then(|bytes| serde_json::from_slice(&bytes).ok())
-            .unwrap_or_default()
+        let Ok(bytes) = std::fs::read(path) else { return State::default() };
+        // Some editors put a byte-order mark at the start; JSON does not allow one.
+        let json = bytes.strip_prefix(b"\xEF\xBB\xBF").unwrap_or(&bytes);
+        serde_json::from_slice(json).unwrap_or_else(|_| {
+            let _ = std::fs::rename(path, path.with_extension("unreadable.json"));
+            State::default()
+        })
     }
 
     /// Written to a temporary file first so a crash cannot leave half a file.
@@ -117,8 +122,17 @@ mod tests {
         state.save(&path).unwrap(); // overwriting an existing file works
         assert_eq!(State::load(&path), state);
 
+        // A byte-order mark in front is tolerated.
+        let mut with_mark = b"\xEF\xBB\xBF".to_vec();
+        with_mark.extend(std::fs::read(&path).unwrap());
+        std::fs::write(&path, with_mark).unwrap();
+        assert_eq!(State::load(&path), state);
+
+        // Anything unreadable is a fresh start, with the old file kept aside.
         std::fs::write(&path, b"not json").unwrap();
         assert_eq!(State::load(&path), State::default());
+        assert!(!path.exists());
+        assert_eq!(std::fs::read(dir.join("state.unreadable.json")).unwrap(), b"not json");
 
         std::fs::remove_dir_all(dir).unwrap();
     }
