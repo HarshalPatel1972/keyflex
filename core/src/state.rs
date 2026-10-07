@@ -19,6 +19,11 @@ pub struct TipState {
     pub used: u32,
     /// The user asked not to see this tip again.
     pub muted: bool,
+    /// Times the long way has been seen since the tip was last shown or its
+    /// shortcut last used. A tip waits for a habit, not a one-off.
+    pub sightings: u32,
+    /// When the shortcut was last pressed, seconds since the Unix epoch.
+    pub last_used: u64,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -116,7 +121,8 @@ mod tests {
         assert_eq!(State::load(&path), State::default());
 
         let mut state = State::default();
-        state.tips.insert("a".into(), TipState { shown: 2, last_shown: 99, used: 1, muted: true });
+        let tip = TipState { shown: 2, last_shown: 99, used: 1, muted: true, sightings: 3, last_used: 50 };
+        state.tips.insert("a".into(), tip);
         state.recent_shows.push(99);
         state.settings.tips_per_day = 2;
         state.settings.disabled_apps.insert("chrome.exe".into());

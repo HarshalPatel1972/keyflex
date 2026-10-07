@@ -108,6 +108,11 @@ const LEARNED_CHEERS: &[&str] = &[
 ];
 
 /// How sparingly tips are shown.
+///
+/// The aim is a friend who notices a habit and mentions it once in a while,
+/// not a teacher repeating themselves: a tip waits until the long way has been
+/// seen more than once, backs off for longer each time, never arrives like
+/// clockwork, and steps aside once the user has shown they know the shortcut.
 #[derive(Clone, Debug)]
 pub struct Policy {
     /// A tip retires after being shown this many times.
@@ -123,6 +128,18 @@ pub struct Policy {
     pub min_gap_secs: u64,
     /// Most tips in any 24 hours. `None` uses the user's own setting.
     pub max_per_day: Option<usize>,
+    /// How many times the long way must be seen before a tip is shown, counted
+    /// afresh after each showing and each use of the shortcut.
+    pub habit_sightings: u32,
+    /// A new user's first few tips appear the first time, so the app is not
+    /// silent while they are finding out what it does.
+    pub welcome_tips: u32,
+    /// After the user presses a shortcut, trust them: do not mention it again
+    /// for this long, even if they go back to the long way.
+    pub trust_after_use_secs: u64,
+    /// Stretch each cooldown by a different amount, so reminders feel
+    /// unplanned rather than scheduled.
+    pub uneven: bool,
 }
 
 impl Default for Policy {
@@ -134,6 +151,10 @@ impl Default for Policy {
             cooldowns_secs: vec![DAY, 3 * DAY, 7 * DAY],
             min_gap_secs: 10 * 60,
             max_per_day: None,
+            habit_sightings: 2,
+            welcome_tips: 2,
+            trust_after_use_secs: 7 * DAY,
+            uneven: true,
         }
     }
 }
@@ -148,6 +169,10 @@ impl Policy {
             cooldowns_secs: vec![0],
             min_gap_secs: 0,
             max_per_day: Some(usize::MAX),
+            habit_sightings: 1,
+            welcome_tips: 0,
+            trust_after_use_secs: 0,
+            uneven: false,
         }
     }
 }
@@ -316,6 +341,8 @@ impl Engine {
                 let tip = state.tips.entry(rule.id.clone()).or_default();
                 if tip.used < policy.learned_after_uses {
                     tip.used += 1;
+                    tip.last_used = now;
+                    tip.sightings = 0;
                     *dirty = true;
                     // Only celebrate shortcuts we taught, not ones the user already knew.
                     if tip.shown > 0 && !tip.muted {
@@ -374,15 +401,32 @@ impl Engine {
     fn show(&mut self, index: usize, now: u64) -> Option<Shown> {
         let Engine { rules, state, policy, dirty, .. } = self;
         let rule = &rules[index];
+        let tips_so_far: u32 = state.tips.values().map(|tip| tip.shown).sum();
         let tip = state.tips.entry(rule.id.clone()).or_default();
 
         let learned = policy.retire_learned && tip.used >= policy.learned_after_uses;
         if tip.muted || learned || tip.shown >= policy.max_shows_per_tip {
             return None;
         }
+        // From here on the long way counts as a sighting, shown or not.
+        tip.sightings = tip.sightings.saturating_add(1);
+        *dirty = true;
+
+        // They pressed the shortcut recently. They know it; let it go.
+        if tip.last_used > 0 && now.saturating_sub(tip.last_used) < policy.trust_after_use_secs {
+            return None;
+        }
+        // Once is a one-off. Wait until it looks like a habit.
+        let welcome = tip.shown == 0 && tips_so_far < policy.welcome_tips;
+        if !welcome && tip.sightings < policy.habit_sightings {
+            return None;
+        }
         if tip.shown > 0 {
             let nth = (tip.shown as usize - 1).min(policy.cooldowns_secs.len().saturating_sub(1));
-            let cooldown = policy.cooldowns_secs.get(nth).copied().unwrap_or(0);
+            let mut cooldown = policy.cooldowns_secs.get(nth).copied().unwrap_or(0);
+            if policy.uneven {
+                cooldown = stretched(cooldown, &rule.id, tip.shown);
+            }
             if now.saturating_sub(tip.last_shown) < cooldown {
                 return None;
             }
@@ -404,11 +448,18 @@ impl Engine {
         };
         tip.shown += 1;
         tip.last_shown = now;
+        tip.sightings = 0;
         state.recent_shows.push(now);
-        *dirty = true;
         let mood = next_face(state, faces);
         Some(Shown { id: rule.id.clone(), keys: rule.shortcut.label(), line, mood, can_mute: true })
     }
+}
+
+/// `wait` made up to 60% longer, by an amount that differs for each tip and
+/// each showing but is always the same for a given one.
+fn stretched(wait: u64, id: &str, shown: u32) -> u64 {
+    let seed = id.bytes().fold(shown.wrapping_mul(31), |hash, byte| hash.wrapping_mul(131).wrapping_add(byte as u32));
+    wait + wait * (seed % 61) as u64 / 100
 }
 
 /// The next face from `faces`. One counter steps through every set, so two
@@ -450,6 +501,12 @@ mod tests {
 
     fn engine(policy: Policy) -> Engine {
         Engine::new(rules::parse(RULES).unwrap(), State::default(), policy)
+    }
+
+    /// The real limits, minus the patience: a tip shows the first time the long
+    /// way is seen, on an exact schedule. For tests about the other limits.
+    fn impatient() -> Policy {
+        Policy { habit_sightings: 1, trust_after_use_secs: 0, uneven: false, ..Policy::default() }
     }
 
     fn click<'a>(app: &'a str, window: &'a str, name: &'a str, control: Control) -> Event<'a> {
@@ -611,7 +668,7 @@ mod tests {
 
     #[test]
     fn cooldown_grows_then_tip_retires_and_lines_rotate() {
-        let policy = Policy { min_gap_secs: 0, max_per_day: Some(usize::MAX), ..Policy::default() };
+        let policy = Policy { min_gap_secs: 0, max_per_day: Some(usize::MAX), ..impatient() };
         let mut engine = engine(policy);
 
         assert_eq!(engine.handle(&downloads(), 0).unwrap().line, "first line");
@@ -641,7 +698,7 @@ mod tests {
 
     #[test]
     fn face_escalates_then_celebrates_when_the_shortcut_is_used() {
-        let policy = Policy { min_gap_secs: 0, cooldowns_secs: vec![0], ..Policy::default() };
+        let policy = Policy { min_gap_secs: 0, cooldowns_secs: vec![0], ..impatient() };
         let mut engine = engine(policy);
         let ctrl_j = key("chrome.exe", "", "Ctrl+J");
         assert_eq!(engine.status(0), Status { mood: Mood::Knowing, waiting_on: None });
@@ -667,6 +724,54 @@ mod tests {
 
         // The pride wears off.
         assert_eq!(engine.status(5 + PROUD_FOR).mood, Mood::Knowing);
+    }
+
+    #[test]
+    fn a_tip_waits_for_a_habit_not_a_one_off() {
+        // Past the welcome tips, with nothing else in the way.
+        let policy = Policy { welcome_tips: 0, min_gap_secs: 0, uneven: false, ..Policy::default() };
+        let mut engine = engine(policy);
+
+        assert_eq!(engine.handle(&downloads(), 0), None, "seen once: could be a one-off");
+        assert!(engine.handle(&downloads(), 60).is_some(), "seen twice: a habit");
+
+        // After a showing the count starts again, on top of the cooldown.
+        assert_eq!(engine.handle(&downloads(), 2 * DAY), None, "first time since the tip");
+        assert!(engine.handle(&downloads(), 2 * DAY + 60).is_some());
+    }
+
+    #[test]
+    fn a_new_users_first_tips_appear_straight_away() {
+        let mut engine = engine(Policy { min_gap_secs: 0, ..Policy::default() });
+        assert!(engine.handle(&downloads(), 0).is_some(), "the first tip is not held back");
+    }
+
+    #[test]
+    fn using_the_shortcut_earns_trust_even_after_a_relapse() {
+        let policy = Policy { min_gap_secs: 0, uneven: false, ..Policy::default() };
+        let mut engine = engine(policy);
+        assert!(engine.handle(&downloads(), 0).is_some());
+
+        // They try the shortcut once, then go back to the menu minutes later, repeatedly.
+        assert!(engine.handle(&key("chrome.exe", "", "Ctrl+J"), 100).is_some(), "celebrated");
+        for minute in 1..30 {
+            assert_eq!(engine.handle(&downloads(), 100 + minute * 60), None, "no nagging after a use");
+        }
+        // Days later, still inside the week of trust, and past the tip's own cooldown.
+        assert_eq!(engine.handle(&downloads(), 100 + 6 * DAY), None);
+        // Only once the week is up, and the habit is clearly back, is it mentioned again.
+        assert!(engine.handle(&downloads(), 100 + 7 * DAY).is_some());
+    }
+
+    #[test]
+    fn reminders_do_not_arrive_like_clockwork() {
+        for (id, shown) in [("a", 1), ("browser.downloads", 1), ("browser.downloads", 2), ("explorer.rename", 3)] {
+            let wait = stretched(DAY, id, shown);
+            assert!((DAY..=DAY + DAY * 6 / 10).contains(&wait), "{id} {shown}: {wait}");
+            assert_eq!(wait, stretched(DAY, id, shown), "the same every time for a given tip and showing");
+        }
+        assert_ne!(stretched(DAY, "browser.downloads", 1), stretched(DAY, "browser.downloads", 2));
+        assert_ne!(stretched(DAY, "browser.downloads", 1), stretched(DAY, "explorer.rename", 1));
     }
 
     #[test]
@@ -712,7 +817,7 @@ mod tests {
 
     #[test]
     fn muting_from_the_popup_and_settings_take_effect() {
-        let mut engine = engine(Policy { min_gap_secs: 0, cooldowns_secs: vec![0], ..Policy::default() });
+        let mut engine = engine(Policy { min_gap_secs: 0, cooldowns_secs: vec![0], ..impatient() });
         assert!(engine.handle(&downloads(), 0).is_some());
         engine.take_dirty();
 
