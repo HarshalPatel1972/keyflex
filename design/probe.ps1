@@ -60,7 +60,7 @@ if ($OpenMenus) {
     $pattern = $null
     if (-not $menu.TryGetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern, [ref]$pattern)) { continue }
     try {
-      $pattern.Expand(); Start-Sleep -Milliseconds 450
+      $pattern.Expand(); Start-Sleep -Milliseconds 1100
       "-- menu '$($menu.Current.Name)'"
       $items = $AE::RootElement.FindAll($Scope::Descendants, (New-Object System.Windows.Automation.AndCondition(
         (New-Object System.Windows.Automation.PropertyCondition($AE::ProcessIdProperty, $process.Id)),

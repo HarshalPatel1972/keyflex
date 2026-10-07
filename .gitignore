@@ -26,3 +26,5 @@ dist-ssr
 
 # Microsoft Store package output
 packaging/out
+
+__pycache__
