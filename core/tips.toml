@@ -1,0 +1,637 @@
+# Keyflex tips.
+#
+# Each [[tip]] is one "there is a better way" moment:
+#   id          unique, stable name (tip history is stored under it)
+#   apps        exe names the tip applies to, lowercase; ["*"] means every app
+#   shortcut    the better way; pressing it counts as "the user knows this"
+#   topic       what the tip is about, as it reads mid-sentence ("Downloads",
+#               "renaming"); used when celebrating: "I'll never bring up ... again"
+#   within_secs for multi-step tips, how long the whole sequence may take (default 120)
+#   lines       what we say. A tip is shown at most three times and the lines
+#               escalate with the character's face:
+#                 1st  a friendly "psst"              (wink)
+#                 2nd  cheeky, "we talked about this" (half-closed eyes)
+#                 3rd  a dramatic last plea            (big wet eyes)
+#   [[tip.step]] what the user has to do, in order, for the tip to fire.
+#               `any` lists alternatives; each alternative is exactly one of
+#                 is     = "copy"         a button/menu item named exactly this
+#                 click  = "name prefix"  a button/menu item whose name starts with this
+#                 key    = "Delete"       a key or combo
+#                 opened = true           a new window of the app, opened using only the mouse
+#               (names are compared without case, "&", "..." or a trailing shortcut)
+#               optionally narrowed by
+#                 types = ["MenuItem"]    Button | MenuItem | SplitButton
+#                 while_typing = true     only if the user was typing just before
+#                 window = "text"         active window title contains this
+#                 window_not = "text"     active window title does not contain this
+#                 class = "CabinetWClass" with `opened`: only this kind of window
+#
+# Only add a tip when the shortcut is a real improvement:
+#   * something reached through a menu (two or more clicks) always qualifies;
+#   * a one-click toolbar button qualifies only `while_typing`, when reaching
+#     for the mouse was the detour;
+#   * opening an app by hunting for it with the mouse qualifies.
+# Every line is written by hand.
+
+# ── Everywhere ───────────────────────────────────────────────────────────
+# The classics, when reached through a right-click or an Edit menu.
+
+[[tip]]
+id = "everywhere.copy"
+apps = ["*"]
+shortcut = "Ctrl+C"
+topic = "copying"
+lines = [
+  "Right-click, then Copy? Ctrl+C does it before the menu finishes opening.",
+  "The right-click menu again. Ctrl+C is two keys and zero menus. Just saying.",
+  "Last time, I promise: Ctrl+C copies. It has since 1983. It's very reliable.",
+]
+[[tip.step]]
+any = [{ is = "copy", types = ["MenuItem"] }]
+
+[[tip]]
+id = "everywhere.paste"
+apps = ["*"]
+shortcut = "Ctrl+V"
+topic = "pasting"
+lines = [
+  "Ctrl+V pastes right where your cursor is. No menu needed.",
+  "Paste, from the menu, again. Ctrl+V is sitting right next to Ctrl+C, waiting.",
+  "Final mention: Ctrl+V. Copy's best friend. They go everywhere together.",
+]
+[[tip.step]]
+any = [{ is = "paste", types = ["MenuItem"] }]
+
+[[tip]]
+id = "everywhere.cut"
+apps = ["*"]
+shortcut = "Ctrl+X"
+topic = "cutting"
+lines = [
+  "Ctrl+X cuts. X marks the spot, like a tiny pair of scissors.",
+  "Cut, from the menu. Ctrl+X would have had it snipped already.",
+  "One last time: Ctrl+X. Snip. Done. I'll put the scissors away now.",
+]
+[[tip.step]]
+any = [{ is = "cut", types = ["MenuItem"] }]
+
+[[tip]]
+id = "everywhere.undo"
+apps = ["*"]
+shortcut = "Ctrl+Z"
+topic = "undoing"
+lines = [
+  "Mistakes happen. Ctrl+Z makes them un-happen, instantly.",
+  "Going to the menu to undo is its own little mistake. Ctrl+Z fixes both.",
+  "Last reminder: Ctrl+Z. The most forgiving two keys on your keyboard.",
+]
+[[tip.step]]
+any = [{ is = "undo", types = ["MenuItem"] }]
+
+[[tip]]
+id = "everywhere.redo"
+apps = ["*"]
+shortcut = "Ctrl+Y"
+topic = "redoing"
+lines = [
+  "Undid too much? Ctrl+Y brings it back. Y for \"yes, I did want that\".",
+  "Redo, from the menu. Ctrl+Y is Ctrl+Z's less famous sibling. Give it a chance.",
+  "Final note on redo: Ctrl+Y. Then I'll stop redoing this conversation.",
+]
+[[tip.step]]
+any = [{ is = "redo", types = ["MenuItem"] }]
+
+[[tip]]
+id = "everywhere.select-all"
+apps = ["*"]
+shortcut = "Ctrl+A"
+topic = "selecting everything"
+lines = [
+  "Ctrl+A selects everything. A for All. No dragging, no menu.",
+  "Select All, from the menu again. Ctrl+A grabs the lot before you've blinked.",
+  "Last time: Ctrl+A. Everything. All of it. In one go.",
+]
+[[tip.step]]
+any = [{ is = "select all", types = ["MenuItem"] }]
+
+[[tip]]
+id = "everywhere.save"
+apps = ["*"]
+shortcut = "Ctrl+S"
+topic = "saving"
+lines = [
+  "File, then Save? Ctrl+S saves without your hands leaving the keys.",
+  "The File menu again. People who press Ctrl+S every few minutes sleep better.",
+  "Final plea: Ctrl+S. Press it often. Press it now. Future you says thanks.",
+]
+[[tip.step]]
+any = [{ is = "save", types = ["MenuItem"] }]
+
+[[tip]]
+id = "everywhere.find"
+apps = ["*"]
+shortcut = "Ctrl+F"
+topic = "finding things"
+lines = [
+  "Looking for something? Ctrl+F opens Find straight away. F for Find.",
+  "Find, via the menu. Ironic, having to look for the thing that looks for things.",
+  "Last one on this: Ctrl+F. It finds things. Including, hopefully, a place in your heart.",
+]
+[[tip.step]]
+any = [{ is = "find", types = ["MenuItem"] }]
+
+[[tip]]
+id = "everywhere.print"
+apps = ["*"]
+shortcut = "Ctrl+P"
+topic = "printing"
+lines = [
+  "Ctrl+P opens Print from anywhere. P for Print, or for \"paper, please\".",
+  "Digging through the menu for Print again? Ctrl+P. The printer is slow enough already.",
+  "Final reminder: Ctrl+P. Then it's between you and the printer.",
+]
+[[tip.step]]
+any = [{ is = "print", types = ["MenuItem"] }]
+
+# ── Browsers ─────────────────────────────────────────────────────────────
+
+[[tip]]
+id = "browser.downloads"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Ctrl+J"
+topic = "Downloads"
+lines = [
+  "Psst. Two clicks to reach Downloads? Ctrl+J just walks in the front door.",
+  "The menu again? Ctrl+J is right there. I'm not mad. I'm just... watching.",
+  "Last time I'll say it: Ctrl+J opens Downloads. After this, I suffer in silence.",
+]
+[[tip.step]]
+any = [{ is = "downloads", types = ["MenuItem"] }]
+
+[[tip]]
+id = "browser.history"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Ctrl+H"
+topic = "History"
+lines = [
+  "H for History. One of the few shortcuts that actually makes sense.",
+  "Digging through the menu for History again? Ctrl+H. Your past is one tap away.",
+  "Final reminder, then I let it go: Ctrl+H. History doesn't have to repeat itself.",
+]
+[[tip.step]]
+any = [{ is = "history", types = ["MenuItem"] }]
+
+[[tip]]
+id = "browser.bookmark"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Ctrl+D"
+topic = "bookmarking"
+lines = [
+  "Ctrl+D keeps this page for later. D for \"don't lose this\".",
+  "Another bookmark the long way. Ctrl+D would've saved it before the menu even opened.",
+  "One more time for the people in the back: Ctrl+D. Then my lips are sealed.",
+]
+[[tip.step]]
+any = [{ click = "bookmark this tab", types = ["MenuItem"] }, { click = "add this page to favorites", types = ["MenuItem"] }]
+
+[[tip]]
+id = "browser.reopen-tab"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Ctrl+Shift+T"
+topic = "reopening tabs"
+lines = [
+  "Closed the wrong tab? Ctrl+Shift+T brings it back from the dead.",
+  "Hunting for \"Reopen closed tab\" again. Ctrl+Shift+T. It even remembers the one before that.",
+  "Last time: Ctrl+Shift+T. Tab resurrection, on demand. Use it wisely.",
+]
+[[tip.step]]
+any = [{ click = "reopen closed tab", types = ["MenuItem"] }]
+
+[[tip]]
+id = "browser.new-window"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Ctrl+N"
+topic = "new windows"
+lines = [
+  "Ctrl+N opens a fresh window. N for New. That's the whole trick.",
+  "New window, from the menu. Ctrl+N would be open and waiting by now.",
+  "Final note: Ctrl+N. A whole new window, for the price of two keys.",
+]
+[[tip.step]]
+any = [{ is = "new window", types = ["MenuItem"] }]
+
+[[tip]]
+id = "browser.private-window"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Ctrl+Shift+N"
+topic = "private windows"
+lines = [
+  "Ctrl+Shift+N opens a private window. I won't ask what for.",
+  "Going private through the menu, where everyone can see? Ctrl+Shift+N is far more discreet.",
+  "Last time, and then we never speak of it: Ctrl+Shift+N.",
+]
+[[tip.step]]
+any = [
+  { click = "new incognito window", types = ["MenuItem"] },
+  { click = "new inprivate window", types = ["MenuItem"] },
+  { click = "new private window", types = ["MenuItem"] },
+]
+
+[[tip]]
+id = "browser.devtools"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Ctrl+Shift+I"
+topic = "developer tools"
+lines = [
+  "Ctrl+Shift+I opens developer tools. I for Inspect.",
+  "Right-click, Inspect, again. Ctrl+Shift+I, or just F12 if you're feeling lazy.",
+  "Final answer: Ctrl+Shift+I. The page's insides, without the right-click.",
+]
+[[tip.step]]
+any = [{ is = "inspect", types = ["MenuItem"] }, { is = "developer tools", types = ["MenuItem"] }]
+
+[[tip]]
+id = "browser.back"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Alt+Left"
+topic = "going back"
+lines = [
+  "Right-click, then Back? Alt+Left goes back without the menu.",
+  "Back, via the right-click menu, again. Alt+Left. And Alt+Right when you change your mind.",
+  "Last time: Alt+Left. Going back shouldn't take this many steps forward.",
+]
+[[tip.step]]
+any = [{ is = "back", types = ["MenuItem"] }]
+
+[[tip]]
+id = "browser.reload"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Ctrl+R"
+topic = "reloading"
+lines = [
+  "Ctrl+R reloads the page. R for Reload. Or for \"really? still not loaded?\"",
+  "Right-click, Reload. Ctrl+R would have refreshed it twice by now.",
+  "Final reminder: Ctrl+R. And Ctrl+Shift+R when the page is being stubborn.",
+]
+[[tip.step]]
+any = [{ is = "reload", types = ["MenuItem"] }, { is = "refresh", types = ["MenuItem"] }]
+
+[[tip]]
+id = "browser.clear-data"
+apps = ["chrome.exe", "msedge.exe", "brave.exe"]
+shortcut = "Ctrl+Shift+Delete"
+topic = "clearing browsing data"
+lines = [
+  "Ctrl+Shift+Delete jumps straight to clearing your browsing data. No digging.",
+  "Three menus deep to clear your history? Ctrl+Shift+Delete. Evidence, gone.",
+  "Last time: Ctrl+Shift+Delete. What history? Exactly.",
+]
+[[tip.step]]
+any = [{ click = "delete browsing data", types = ["MenuItem"] }, { click = "clear browsing data", types = ["MenuItem"] }]
+
+# ── File Explorer ────────────────────────────────────────────────────────
+
+[[tip]]
+id = "explorer.rename"
+apps = ["explorer.exe"]
+shortcut = "F2"
+topic = "renaming"
+lines = [
+  "F2 has been sitting above your number keys this whole time, waiting to rename things.",
+  "Right-click, Rename... again. F2 is up there feeling very left out.",
+  "Last call for F2. One key. It renames things. It just wants to be pressed.",
+]
+[[tip.step]]
+any = [{ is = "rename", types = ["MenuItem"] }]
+
+[[tip]]
+id = "explorer.new-folder"
+apps = ["explorer.exe"]
+shortcut = "Ctrl+Shift+N"
+topic = "new folders"
+lines = [
+  "Ctrl+Shift+N and a new folder appears, already asking what to call it.",
+  "A new folder, through the menu, like it's 2005. Ctrl+Shift+N. I believe in you.",
+  "I'll stop after this: Ctrl+Shift+N makes a folder. Three keys, zero menus.",
+]
+[[tip.step]]
+any = [{ is = "folder", types = ["MenuItem"] }]
+
+[[tip]]
+id = "explorer.properties"
+apps = ["explorer.exe"]
+shortcut = "Alt+Enter"
+topic = "Properties"
+lines = [
+  "Alt+Enter opens Properties for whatever you've selected. No right-click needed.",
+  "Right-click, scroll, Properties. Or Alt+Enter, and you're already reading it.",
+  "Last nudge: Alt+Enter. Properties, instantly. I rest my case.",
+]
+[[tip.step]]
+any = [{ is = "properties", types = ["MenuItem"] }]
+
+[[tip]]
+id = "explorer.permanent-delete"
+apps = ["explorer.exe"]
+shortcut = "Shift+Delete"
+topic = "deleting for good"
+within_secs = 180
+lines = [
+  "That file took the scenic route: bin first, then gone. Shift+Delete skips the layover.",
+  "Bin, then delete from the bin. Again. Shift+Delete does both and saves the round trip.",
+  "Final offer: Shift+Delete. Gone in one move. No bin, no goodbye tour.",
+]
+[[tip.step]]
+any = [
+  { key = "Delete", window_not = "Recycle Bin" },
+  { is = "delete", window_not = "Recycle Bin" },
+]
+[[tip.step]]
+any = [
+  { key = "Delete", window = "Recycle Bin" },
+  { is = "delete", window = "Recycle Bin" },
+  { click = "empty recycle bin" },
+]
+
+[[tip]]
+id = "explorer.copy-path"
+apps = ["explorer.exe"]
+shortcut = "Ctrl+Shift+C"
+topic = "copying paths"
+lines = [
+  "Ctrl+Shift+C copies a file's full path. Handy, and almost nobody knows it.",
+  "\"Copy as path\" from the menu again. Ctrl+Shift+C is the secret handshake.",
+  "Last time: Ctrl+Shift+C. The path, in your clipboard, in one move.",
+]
+[[tip.step]]
+any = [{ is = "copy as path", types = ["MenuItem"] }]
+
+[[tip]]
+id = "explorer.refresh"
+apps = ["explorer.exe"]
+shortcut = "F5"
+topic = "refreshing"
+lines = [
+  "F5 refreshes the folder. One key, top row.",
+  "Right-click, Refresh. A classic. F5 is the same thing, minus the ceremony.",
+  "Final reminder: F5. Refreshing, in every sense.",
+]
+[[tip.step]]
+any = [{ is = "refresh", types = ["MenuItem"] }]
+
+[[tip]]
+id = "explorer.open"
+apps = ["explorer.exe"]
+shortcut = "Win+E"
+topic = "opening File Explorer"
+lines = [
+  "Win+E opens File Explorer from anywhere. E for Explorer.",
+  "Hunting for the folder icon again? Win+E. It's faster than finding it.",
+  "Last time: Win+E. Your files, summoned. No searching for the yellow folder.",
+]
+# A folder window only: the desktop and taskbar belong to explorer.exe too.
+[[tip.step]]
+any = [{ opened = true, class = "CabinetWClass" }]
+
+# ── Windows ──────────────────────────────────────────────────────────────
+
+[[tip]]
+id = "windows.task-manager"
+apps = ["taskmgr.exe"]
+shortcut = "Ctrl+Shift+Esc"
+topic = "Task Manager"
+lines = [
+  "Something frozen? Ctrl+Shift+Esc opens Task Manager directly. No menus, no searching.",
+  "Task Manager, the long way, again. Ctrl+Shift+Esc works even when everything else is stuck.",
+  "Last time: Ctrl+Shift+Esc. For the day your mouse freezes too.",
+]
+[[tip.step]]
+any = [{ opened = true }]
+
+[[tip]]
+id = "windows.settings"
+apps = ["systemsettings.exe"]
+shortcut = "Win+I"
+topic = "Settings"
+lines = [
+  "Win+I opens Settings instantly. I for... \"I need to change something\".",
+  "Clicking your way to Settings again. Win+I skips the whole journey.",
+  "Final note: Win+I. Settings, one move, no Start menu.",
+]
+[[tip.step]]
+any = [{ opened = true }]
+
+[[tip]]
+id = "windows.snip"
+apps = ["snippingtool.exe"]
+shortcut = "Win+Shift+S"
+topic = "screenshots"
+lines = [
+  "Win+Shift+S starts a screenshot straight away. No need to open the app first.",
+  "Opening Snipping Tool to take a snip, again. Win+Shift+S and you're already dragging.",
+  "Last time: Win+Shift+S. Screenshot now, find the app never.",
+]
+[[tip.step]]
+any = [{ opened = true }]
+
+# ── Microsoft Office ─────────────────────────────────────────────────────
+# Ribbon buttons are one click, so these fire only while you are typing.
+
+[[tip]]
+id = "office.bold"
+apps = ["winword.exe", "excel.exe", "powerpnt.exe", "onenote.exe"]
+shortcut = "Ctrl+B"
+topic = "bold"
+lines = [
+  "You were mid-sentence and reached for the mouse. Ctrl+B makes it bold without stopping.",
+  "The Bold button again, mid-typing. Ctrl+B. Your hands were already right there.",
+  "Last time, in bold: Ctrl+B. Then I'll stop being so emphatic.",
+]
+[[tip.step]]
+any = [{ is = "bold", while_typing = true }]
+
+[[tip]]
+id = "office.italic"
+apps = ["winword.exe", "excel.exe", "powerpnt.exe", "onenote.exe"]
+shortcut = "Ctrl+I"
+topic = "italics"
+lines = [
+  "Ctrl+I leans your text over. No mouse trip required.",
+  "Off to the ribbon for italics again. Ctrl+I. I for Italic. It's not subtle.",
+  "One last, slightly slanted reminder: Ctrl+I.",
+]
+[[tip.step]]
+any = [{ is = "italic", while_typing = true }]
+
+[[tip]]
+id = "office.underline"
+apps = ["winword.exe", "excel.exe", "powerpnt.exe", "onenote.exe"]
+shortcut = "Ctrl+U"
+topic = "underlining"
+lines = [
+  "Ctrl+U underlines. U for Underline. Your hands stay where they are.",
+  "The Underline button, mid-typing, again. Ctrl+U would've drawn that line already.",
+  "Let me underline this one final time: Ctrl+U.",
+]
+[[tip.step]]
+any = [{ is = "underline", while_typing = true }]
+
+[[tip]]
+id = "office.link"
+apps = ["winword.exe", "excel.exe", "powerpnt.exe", "onenote.exe"]
+shortcut = "Ctrl+K"
+topic = "adding links"
+lines = [
+  "Ctrl+K adds a link to whatever's selected. K for... lin-K. Just go with it.",
+  "Insert, Link, again. Ctrl+K gets you the same box in one move.",
+  "Final link in the chain: Ctrl+K. I'll leave it there.",
+]
+[[tip.step]]
+any = [{ is = "link" }, { is = "hyperlink" }, { click = "insert link" }]
+
+[[tip]]
+id = "office.replace"
+apps = ["winword.exe", "excel.exe", "powerpnt.exe", "notepad.exe"]
+shortcut = "Ctrl+H"
+topic = "find and replace"
+lines = [
+  "Ctrl+H opens Find and Replace. Fix every \"teh\" in one go.",
+  "Looking for Replace in the menu again. Ctrl+H swaps things faster than you can find the button.",
+  "Last time: Ctrl+H. Replace this habit with that shortcut.",
+]
+[[tip.step]]
+any = [{ is = "replace" }]
+
+[[tip]]
+id = "excel.autosum"
+apps = ["excel.exe"]
+shortcut = "Alt+="
+topic = "AutoSum"
+lines = [
+  "Alt+= adds everything up for you. Excel guesses the range and it's usually right.",
+  "The AutoSum button again. Alt+= does the maths while you stay in the cells.",
+  "Final total: Alt+=. Sum it up, literally.",
+]
+[[tip.step]]
+any = [{ is = "autosum" }, { is = "sum" }]
+
+[[tip]]
+id = "excel.filter"
+apps = ["excel.exe"]
+shortcut = "Ctrl+Shift+L"
+topic = "filters"
+lines = [
+  "Ctrl+Shift+L switches filters on and off. The little arrows just appear.",
+  "Data, Filter, again. Ctrl+Shift+L toggles it from anywhere in the sheet.",
+  "Last time: Ctrl+Shift+L. Filter out the extra clicks.",
+]
+[[tip.step]]
+any = [{ is = "filter" }]
+
+[[tip]]
+id = "powerpoint.new-slide"
+apps = ["powerpnt.exe"]
+shortcut = "Ctrl+M"
+topic = "new slides"
+lines = [
+  "Ctrl+M adds a new slide. M for \"more slides\", presumably.",
+  "The New Slide button again. Ctrl+M keeps you in the flow while the deck grows.",
+  "Final slide on this topic: Ctrl+M. Thank you for coming to my talk.",
+]
+[[tip.step]]
+any = [{ is = "new slide" }]
+
+# ── Notepad ──────────────────────────────────────────────────────────────
+
+[[tip]]
+id = "notepad.time-date"
+apps = ["notepad.exe"]
+shortcut = "F5"
+topic = "the time stamp"
+lines = [
+  "F5 in Notepad stamps the time and date. It's been there since Windows 1.0.",
+  "Edit, Time/Date, again. F5 does it in one tap. Great for quick logs.",
+  "Last time: F5. Notepad's oldest party trick.",
+]
+[[tip.step]]
+any = [{ is = "time/date", types = ["MenuItem"] }]
+
+[[tip]]
+id = "notepad.go-to"
+apps = ["notepad.exe"]
+shortcut = "Ctrl+G"
+topic = "jumping to a line"
+lines = [
+  "Ctrl+G jumps to any line number. G for Go.",
+  "Edit, Go to, again. Ctrl+G gets you there before the menu opens.",
+  "Final destination: Ctrl+G. Go on, then.",
+]
+[[tip.step]]
+any = [{ is = "go to", types = ["MenuItem"] }]
+
+# ── Visual Studio Code ───────────────────────────────────────────────────
+
+[[tip]]
+id = "vscode.command-palette"
+apps = ["code.exe", "cursor.exe"]
+shortcut = "Ctrl+Shift+P"
+topic = "the Command Palette"
+lines = [
+  "Ctrl+Shift+P opens the Command Palette. Everything the editor can do, one search away.",
+  "Through the menu for the Command Palette? Ctrl+Shift+P is the one shortcut to rule them all.",
+  "Last time: Ctrl+Shift+P. Learn this one and you can forget most of the others.",
+]
+[[tip.step]]
+any = [{ is = "command palette", types = ["MenuItem"] }]
+
+[[tip]]
+id = "vscode.terminal"
+apps = ["code.exe", "cursor.exe"]
+shortcut = "Ctrl+`"
+topic = "the terminal"
+lines = [
+  "Ctrl+` pops the terminal open. That's the key under Esc.",
+  "Terminal, New Terminal, again. Ctrl+` toggles it without leaving your code.",
+  "Final command: Ctrl+`. The terminal was one key away the whole time.",
+]
+[[tip.step]]
+any = [{ is = "new terminal", types = ["MenuItem"] }]
+
+[[tip]]
+id = "vscode.go-to-file"
+apps = ["code.exe", "cursor.exe"]
+shortcut = "Ctrl+P"
+topic = "opening files"
+lines = [
+  "Ctrl+P opens any file by name. Type three letters, press Enter, done.",
+  "Clicking through menus to open a file? Ctrl+P finds it faster than the sidebar can scroll.",
+  "Last time: Ctrl+P. Stop browsing for files. Just ask for them.",
+]
+[[tip.step]]
+any = [{ is = "go to file", types = ["MenuItem"] }]
+
+[[tip]]
+id = "vscode.find-in-files"
+apps = ["code.exe", "cursor.exe"]
+shortcut = "Ctrl+Shift+F"
+topic = "searching the project"
+lines = [
+  "Ctrl+Shift+F searches every file in the project at once.",
+  "Edit, Find in Files, again. Ctrl+Shift+F. Same search, no menu.",
+  "Final search result: Ctrl+Shift+F. Found it.",
+]
+[[tip.step]]
+any = [{ is = "find in files", types = ["MenuItem"] }]
+
+[[tip]]
+id = "vscode.format"
+apps = ["code.exe", "cursor.exe"]
+shortcut = "Shift+Alt+F"
+topic = "formatting"
+lines = [
+  "Shift+Alt+F tidies the whole file. Like making your bed, but instant.",
+  "Right-click, Format Document, again. Shift+Alt+F cleans up without the menu.",
+  "Last time: Shift+Alt+F. Messy code, meet tidy code.",
+]
+[[tip.step]]
+any = [{ is = "format document", types = ["MenuItem"] }]

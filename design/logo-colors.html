@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; background: #0f1012; color: #e6e6e6; font: 16px "Segoe UI", sans-serif; }
+  .grid { display: grid; grid-template-columns: repeat(7, 250px); }
+  .cell { padding: 16px; border-right: 1px solid #2e3239; }
+  h2 { font-size: 18px; margin: 0 0 10px; }
+  .tile { width: 218px; height: 150px; display: grid; place-items: center; border-radius: 12px; margin-bottom: 10px; }
+  .dark { background: #181a1e; } .light { background: #f3f4f6; }
+  .small { display: flex; align-items: center; gap: 16px; background: #1c2333; padding: 8px 12px; border-radius: 8px; }
+  .tip { margin-top: 10px; background: #181a1e; border-left: 5px solid; border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+  .tip b { display: block; font-size: 17px; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+<div class="grid" id="grid"></div>
+<script>
+  const palettes = [
+    { name: "1 · Amber (now)", accent: "#F59E0B", edge: "#C2610C", side: "#E8890C", hi: "#FFD84D", lo: "#FBAA19", cheek: "#F97316", brow: "#B4560A", mouth: "#5B2106", pupil: "#2A1A05" },
+    { name: "2 · Coral",       accent: "#FF6B45", edge: "#B93A1E", side: "#E2532F", hi: "#FF9A7A", lo: "#FF6B45", cheek: "#FF2E63", brow: "#A8321A", mouth: "#5A1408", pupil: "#2A0E08" },
+    { name: "3 · Violet",      accent: "#8B6CFF", edge: "#4B2FC2", side: "#6747E8", hi: "#A995FF", lo: "#7C5CFF", cheek: "#FF7AC8", brow: "#4022B0", mouth: "#1E0F5C", pupil: "#170B40" },
+    { name: "4 · Mint",        accent: "#1FCFAF", edge: "#0B8F78", side: "#12B398", hi: "#5FEBD0", lo: "#1FCFAF", cheek: "#FF8A7A", brow: "#0A7D69", mouth: "#06443A", pupil: "#06302A" },
+    { name: "5 · Sky blue",    accent: "#3D9BFF", edge: "#1C62C4", side: "#2F80ED", hi: "#7CC0FF", lo: "#3D9BFF", cheek: "#FF8FB0", brow: "#1A56AD", mouth: "#0B2A5C", pupil: "#0A1F40" },
+    { name: "7 · Duo green",   accent: "#58CC02", edge: "#3F8F00", side: "#58A700", hi: "#8EE53A", lo: "#58CC02", cheek: "#FFC800", brow: "#3A8200", mouth: "#1E4A00", pupil: "#12300A" },
+    { name: "6 · Pink",        accent: "#FF5C9A", edge: "#C0286A", side: "#E63E86", hi: "#FF96BE", lo: "#FF5C9A", cheek: "#FF2E63", brow: "#A81E5A", mouth: "#5A0C2E", pupil: "#3A081E" },
+  ];
+
+  const mascot = (p, i, size) => `
+    <svg width="${size}" height="${size}" viewBox="0 0 512 512">
+      <defs><linearGradient id="g${i}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${p.hi}"/><stop offset="1" stop-color="${p.lo}"/></linearGradient></defs>
+      <rect x="32" y="60" width="448" height="420" rx="112" fill="${p.edge}"/>
+      <rect x="32" y="44" width="448" height="408" rx="112" fill="${p.side}"/>
+      <rect x="66" y="44" width="380" height="350" rx="88" fill="url(#g${i})"/>
+      <ellipse cx="124" cy="296" rx="30" ry="20" fill="${p.cheek}" opacity="0.45"/>
+      <ellipse cx="388" cy="296" rx="30" ry="20" fill="${p.cheek}" opacity="0.45"/>
+      ${[186, 326].map((x) => `
+        <ellipse cx="${x}" cy="214" rx="62" ry="70" fill="#fff"/>
+        <circle cx="${x + 12}" cy="208" r="36" fill="${p.pupil}"/>
+        <circle cx="${x + 26}" cy="194" r="13" fill="#fff"/>`).join("")}
+      <path d="M140 124 L224 128" stroke="${p.brow}" stroke-width="20" stroke-linecap="round"/>
+      <path d="M288 112 L372 92" stroke="${p.brow}" stroke-width="20" stroke-linecap="round"/>
+      <path d="M218 316 Q268 346 306 300" fill="none" stroke="${p.mouth}" stroke-width="18" stroke-linecap="round"/>
+    </svg>`;
+
+  document.getElementById("grid").innerHTML = palettes.map((p, i) => `
+    <div class="cell">
+      <h2 style="color:${p.accent}">${p.name}</h2>
+      <div class="tile dark">${mascot(p, i, 128)}</div>
+      <div class="tile light">${mascot(p, i, 128)}</div>
+      <div class="small">${[48, 32, 16].map((s) => mascot(p, i, s)).join("")}</div>
+      <div class="tip" style="border-color:${p.accent}"><b style="color:${p.accent}">Ctrl + J</b>Two clicks to reach Downloads.</div>
+    </div>`).join("");
+</script>
+</body>
+</html>

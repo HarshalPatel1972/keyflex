@@ -1,12 +1,28 @@
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Keycap body -->
-  <rect x="10" y="22" width="80" height="56" rx="14" fill="#F5A623"/>
-  <!-- Keycap inner recess -->
-  <rect x="16" y="28" width="68" height="44" rx="10" fill="#D4891A"/>
-  <!-- Reflex arc: curved path representing muscle reflex signal -->
-  <path d="M25 58 Q34 30 50 46 Q66 62 75 36"
-        stroke="#0D0D0D" stroke-width="7" stroke-linecap="round"
-        stroke-linejoin="round" fill="none"/>
-  <!-- Terminal dot at arc end -->
-  <circle cx="75" cy="36" r="5.5" fill="#0D0D0D"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- The Keyflex character: a keycap that has spotted a shorter way. -->
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4FE39A"/>
+      <stop offset="1" stop-color="#12B76A"/>
+    </linearGradient>
+  </defs>
+  <!-- Keycap: bottom edge, sloping sides, top face -->
+  <rect x="32" y="60" width="448" height="420" rx="112" fill="#0A7A45"/>
+  <rect x="32" y="44" width="448" height="408" rx="112" fill="#0E9F5B"/>
+  <rect x="66" y="44" width="380" height="350" rx="88" fill="url(#top)"/>
+  <!-- Cheeks -->
+  <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
+  <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FFC53D" opacity="0.5"/>
+  <!-- Eyes, glancing up at the idea -->
+  <ellipse cx="186" cy="214" rx="62" ry="70" fill="#FFFFFF"/>
+  <circle cx="198" cy="208" r="36" fill="#062A18"/>
+  <circle cx="212" cy="194" r="13" fill="#FFFFFF"/>
+  <ellipse cx="326" cy="214" rx="62" ry="70" fill="#FFFFFF"/>
+  <circle cx="338" cy="208" r="36" fill="#062A18"/>
+  <circle cx="352" cy="194" r="13" fill="#FFFFFF"/>
+  <!-- One eyebrow up: "I know a trick" -->
+  <path d="M140 124 L224 128" stroke="#0A6E3E" stroke-width="20" stroke-linecap="round"/>
+  <path d="M288 112 L372 92" stroke="#0A6E3E" stroke-width="20" stroke-linecap="round"/>
+  <!-- Smirk -->
+  <path d="M218 316 Q268 346 306 300" fill="none" stroke="#053D22" stroke-width="18" stroke-linecap="round"/>
 </svg>

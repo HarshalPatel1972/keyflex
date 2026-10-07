@@ -5,14 +5,9 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "notification:default",
-    "autostart:default",
-    "core:window:default",
-    "core:window:allow-show",
-    "core:window:allow-hide",
-    "core:window:allow-close",
+    "core:window:allow-start-dragging",
     "core:window:allow-minimize",
     "core:window:allow-toggle-maximize",
-    "core:window:allow-start-dragging"
+    "core:window:allow-close"
   ]
 }
