@@ -26,6 +26,14 @@ PALETTES = {
     "blue":   ("#8CCBFF", "#4A97FF", "#2F78E6", "#1E57B8", "#1A4A9E", "#6BB2FF", "#FF9DB0", "#0D2E66"),
     "pink":   ("#FFB0D6", "#FF6FB0", "#E65597", "#BA3676", "#A52B68", "#FF8FC4", "#FF4F7A", "#6B1240"),
     "indigo": ("#A3AEFF", "#6573EE", "#4D5AD0", "#3643A6", "#2F3A94", "#8490F7", "#C9A0FF", "#1A2260"),
+    "yellow": ("#FFF3A0", "#FFDD33", "#EFC60A", "#BF9B00", "#8F7400", "#FFE766", "#FF9A6B", "#5C4700"),
+    "olive":  ("#D4E27A", "#A9C231", "#8DA51E", "#6A7F10", "#56680C", "#BDD44E", "#FFB45C", "#34400A"),
+    "mint":   ("#C6F7DF", "#86E3BD", "#63CBA2", "#3F9F7B", "#2F8566", "#A6EDD0", "#FF9DB0", "#134A36"),
+    "slate":  ("#A9B6CC", "#7385A3", "#5C6E8C", "#44536D", "#394760", "#8E9EBA", "#D9A0B5", "#1E2838"),
+    "coral":  ("#FFB7A3", "#FF7F66", "#EB654C", "#BF4631", "#A33826", "#FF9C87", "#FF4F5E", "#661A0E"),
+    "sand":   ("#F1E3C4", "#DCC08C", "#C7A86F", "#9E814C", "#86693A", "#E7D2A8", "#F29C8A", "#4D3A1C"),
+    "rose":   ("#FFD3DC", "#FF9FB4", "#F0819A", "#C95D77", "#B04E68", "#FFB9C8", "#FF5C7F", "#6B1F35"),
+    "sky":    ("#D6F0FF", "#9AD6FF", "#73BFF2", "#4A96CC", "#3B7FB3", "#B8E3FF", "#FFA6C0", "#17466B"),
 }
 
 
@@ -252,6 +260,163 @@ def sleepy(f):  # paused
             + f.stroke("M372 62 h46 l-46 50 h46", 13, "#FFFFFF") + f.stroke("M318 104 h28 l-28 30 h28", 10, "#FFFFFF"))
 
 
+CLOSED_EYES = "M136 214 Q186 250 236 214", "M276 214 Q326 250 376 214"
+
+
+def big_eyes(f):
+    """Wide, shining eyes with two highlights each."""
+    return "".join(
+        f'''  <ellipse cx="{x}" cy="212" rx="64" ry="74" fill="#FFFFFF"/>
+  <circle cx="{x}" cy="208" r="42" fill="{PUPIL}"/>
+  <circle cx="{x + 16}" cy="190" r="16" fill="#FFFFFF"/>
+  <circle cx="{x - 16}" cy="228" r="8" fill="#FFFFFF"/>
+''' for x in (186, 326))
+
+
+def question(x, y, size=1.0, color="#FFFFFF"):
+    s = size
+    return (f'  <path d="M{x - 27 * s} {y - 22 * s} Q{x - 27 * s} {y - 52 * s} {x} {y - 52 * s} Q{x + 27 * s} {y - 52 * s} {x + 27 * s} {y - 26 * s} '
+            f'Q{x + 27 * s} {y - 8 * s} {x} {y} L{x} {y + 10 * s}" fill="none" stroke="{color}" stroke-width="{12 * s}" '
+            f'stroke-linecap="round" stroke-linejoin="round"/>\n'
+            f'  <circle cx="{x}" cy="{y + 32 * s}" r="{8 * s}" fill="{color}"/>\n')
+
+
+def sweat(x, y):
+    return f'  <path d="M{x} {y} Q{x + 22} {y + 40} {x} {y + 54} Q{x - 22} {y + 40} {x} {y} Z" fill="#D6F0FF"/>\n'
+
+
+def hello(f):  # the very first tip, and a new user's tray
+    rays = (f.stroke("M404 118 L434 96", 12, "#FFFFFF") + f.stroke("M388 92 L402 58", 12, "#FFFFFF")
+            + f.stroke("M418 146 L454 142", 12, "#FFFFFF"))
+    return (f.eyes(dx=4, dy=-4, pupil=38) + f.stroke("M136 112 Q182 92 226 112") + f.stroke("M286 112 Q330 92 376 112")
+            + f.open_mouth("M196 292 Q256 380 316 292 Z", tongue=(256, 338)) + rays)
+
+
+def idea(f):  # "oh! I've got one for this"
+    bulb = ('  <circle cx="412" cy="70" r="42" fill="#FFFBE0" stroke="#C27F00" stroke-width="8"/>\n'
+            '  <rect x="393" y="106" width="38" height="24" rx="7" fill="#55616D"/>\n'
+            + f.stroke("M398 70 L412 88 L426 70", 8, "#F0A400")
+            + f.stroke("M346 44 L324 28", 11, "#FFFFFF") + f.stroke("M362 110 L338 118", 11, "#FFFFFF")
+            + f.stroke("M478 112 L498 122", 11, "#FFFFFF"))
+    return (f.eyes(dx=16, dy=-18) + f.stroke("M136 116 Q182 96 226 114") + f.stroke("M286 122 L352 120")
+            + f.open_mouth("M214 300 Q256 364 298 300 Z") + bulb)
+
+
+def thinking(f):  # "hmm, let me think how to put this"
+    bubbles = ('  <circle cx="376" cy="122" r="9" fill="#FFFFFF"/>\n'
+               '  <circle cx="402" cy="94" r="14" fill="#FFFFFF"/>\n'
+               '  <circle cx="440" cy="54" r="24" fill="#FFFFFF"/>\n')
+    return (f.eyes(dx=-16, dy=-20, pupil=32) + f.stroke("M136 106 L224 90") + f.stroke("M288 128 L372 132")
+            + f.mouth("M230 324 Q262 338 294 312", 16) + bubbles)
+
+
+def sideeye(f):  # "I saw that."
+    return (f.eyes(dx=28, dy=6, pupil=28) + f.lids(58)
+            + f.stroke("M136 126 L228 134") + f.stroke("M284 116 L376 96")
+            + f.mouth("M220 326 Q262 316 300 330", 16))
+
+
+def eyeroll(f):  # "here we go again"
+    return (f.eyes(dx=10, dy=-32, pupil=28) + f.stroke("M136 108 L228 100") + f.stroke("M284 100 L376 108")
+            + f.mouth("M218 332 L296 320", 16))
+
+
+def nervous(f):  # "third time... not that I'm counting"
+    teeth = (f'  <rect x="200" y="300" width="112" height="44" rx="18" fill="#FFFFFF" stroke="{f.mouth_color}" stroke-width="10"/>\n'
+             + "".join(f.stroke(f"M{x} 304 L{x} 340", 6, f.mouth_color) for x in (228, 256, 284))
+             + f.stroke("M206 322 L306 322", 6, f.mouth_color))
+    return (f.eyes(dx=0, dy=0, pupil=22) + f.stroke("M134 120 L222 98") + f.stroke("M290 98 L378 120")
+            + teeth + sweat(106, 96))
+
+
+def tired(f):  # worn out from asking
+    bags = f.stroke("M140 296 Q186 312 232 296", 9) + f.stroke("M280 296 Q326 312 372 296", 9)
+    return (f.eyes(dx=0, dy=24, pupil=28) + f.lids(98) + bags
+            + f.stroke("M136 110 L226 126") + f.stroke("M286 126 L376 110")
+            + f'  <ellipse cx="256" cy="336" rx="24" ry="16" fill="{f.mouth_color}"/>\n' + sweat(410, 110))
+
+
+def pouting(f):  # "fine. FINE."
+    cheeks = (f'  <ellipse cx="122" cy="300" rx="40" ry="30" fill="{f.cheek}" opacity="0.75"/>\n'
+              f'  <ellipse cx="390" cy="300" rx="40" ry="30" fill="{f.cheek}" opacity="0.75"/>\n')
+    return (cheeks + f.eyes(dx=-22, dy=-12, pupil=30) + f.lids(46)
+            + f.stroke("M128 126 L232 150", 24) + f.stroke("M384 126 L280 150", 24)
+            + f.mouth("M232 334 Q256 310 280 334", 18))
+
+
+def sad(f):  # it has let a shortcut go
+    return (f.eyes(dx=-4, dy=20, pupil=32) + f.lids(52)
+            + f.stroke("M134 124 L222 98") + f.stroke("M290 98 L378 124")
+            + f.mouth("M214 340 Q256 306 298 340"))
+
+
+def relieved(f):  # "phew. you tried it."
+    puff = ('  <ellipse cx="352" cy="338" rx="22" ry="14" fill="#FFFFFF" opacity="0.9"/>\n'
+            '  <ellipse cx="392" cy="350" rx="14" ry="9" fill="#FFFFFF" opacity="0.8"/>\n')
+    return (f.dark(CLOSED_EYES[0], 24) + f.dark(CLOSED_EYES[1], 24)
+            + f.stroke("M136 138 Q182 116 226 130") + f.stroke("M286 130 Q330 116 376 138")
+            + f.mouth("M222 314 Q256 344 290 314") + puff + sweat(408, 96))
+
+
+def amazed(f):  # "wait, you already knew that?"
+    return (big_eyes(f) + f.stroke("M134 100 Q180 76 226 100") + f.stroke("M286 100 Q332 76 378 100")
+            + f'  <ellipse cx="256" cy="332" rx="30" ry="36" fill="{f.mouth_color}"/>\n'
+            + '  <ellipse cx="256" cy="350" rx="18" ry="11" fill="#FF8A9A"/>\n'
+            + sparkle(420, 96, 30, "#FFFFFF") + sparkle(98, 110, 18, "#FFFFFF"))
+
+
+def blushing(f):  # flattered
+    blush = (f'  <ellipse cx="124" cy="292" rx="46" ry="30" fill="{f.cheek}" opacity="0.85"/>\n'
+             f'  <ellipse cx="388" cy="292" rx="46" ry="30" fill="{f.cheek}" opacity="0.85"/>\n'
+             + "".join(f.stroke(f"M{x} 304 L{x + 12} 280", 6, "#FFFFFF") for x in (100, 118, 136, 364, 382, 400)))
+    return (f.eyes(dx=-16, dy=18, pupil=32) + f.lids(40)
+            + f.stroke("M136 122 Q182 106 226 120") + f.stroke("M286 120 Q330 106 376 122")
+            + f.mouth("M218 318 Q238 336 256 320 T294 318", 16) + blush)
+
+
+def angel(f):  # a shortcut has stuck: saintly
+    halo = '  <ellipse cx="256" cy="26" rx="104" ry="17" fill="none" stroke="#FFC53D" stroke-width="13"/>\n'
+    return (f.dark(HAPPY_EYES[0]) + f.dark(HAPPY_EYES[1])
+            + f.stroke("M136 122 Q182 108 226 122") + f.stroke("M286 122 Q330 108 376 122")
+            + f.mouth("M212 304 Q256 350 300 304") + halo
+            + sparkle(430, 124, 22, "#FFFFFF") + sparkle(84, 132, 15, "#FFFFFF"))
+
+
+def crowned(f):  # a milestone
+    crown = ('  <polygon points="152,84 140,10 204,50 256,0 308,50 372,10 360,84" fill="#FFC53D" stroke="#C27F00" '
+             'stroke-width="8" stroke-linejoin="round"/>\n'
+             '  <circle cx="256" cy="58" r="12" fill="#FF5FA8"/>\n'
+             '  <circle cx="198" cy="66" r="8" fill="#7FB2F0"/>\n'
+             '  <circle cx="314" cy="66" r="8" fill="#7FB2F0"/>\n')
+    return (f.eyes(dx=6, dy=10, pupil=32) + f.lids(62)
+            + f.stroke("M136 124 L226 130") + f.stroke("M286 122 L376 106")
+            + f.open_mouth("M206 300 Q262 362 312 290 Z") + crown + sparkle(436, 110, 22, "#FFFFFF"))
+
+
+def zipped(f):  # "lips sealed"
+    teeth = "".join(f.stroke(f"M{x} 312 L{x} 344", 9, PUPIL) for x in range(204, 300, 24))
+    pull = ('  <rect x="308" y="314" width="28" height="28" rx="7" fill="#FFFFFF"/>\n'
+            '  <rect x="313" y="338" width="18" height="44" rx="9" fill="#FFFFFF"/>\n')
+    return (f.eyes(dx=18, dy=-4, pupil=32) + f.stroke("M136 116 L226 108") + f.stroke("M286 108 L376 116")
+            + f.dark("M188 328 L318 328", 13) + teeth + pull)
+
+
+def zen(f):  # nothing to mention, and happy about it
+    sprout = (f.stroke("M256 46 Q254 22 266 6", 9, "#0A7A45")
+              + '  <ellipse cx="288" cy="12" rx="26" ry="13" fill="#3DDC84" transform="rotate(-24 288 12)"/>\n'
+              + '  <ellipse cx="232" cy="26" rx="22" ry="11" fill="#12B76A" transform="rotate(26 232 26)"/>\n')
+    return (f.dark(CLOSED_EYES[0], 22) + f.dark(CLOSED_EYES[1], 22)
+            + f.stroke("M136 132 Q182 118 226 132") + f.stroke("M286 132 Q330 118 376 132")
+            + f.mouth("M224 314 Q256 338 288 314", 16) + sprout)
+
+
+def confused(f):  # menus in a language it cannot read
+    return (f.eye(186, dx=-10, dy=-12, pupil=30, rx=54, ry=60) + f.eye(326, dx=14, dy=10, pupil=38, rx=66, ry=76)
+            + f.stroke("M138 132 L224 140") + f.stroke("M284 104 L374 84")
+            + f.mouth("M206 330 Q224 310 242 330 T278 330 T310 322", 15)
+            + question(418, 96, 0.85) + question(94, 120, 0.6))
+
+
 # mood name -> (colour, face)
 MOODS = {
     "knowing": ("green", knowing),
@@ -273,6 +438,23 @@ MOODS = {
     "party": ("green", party),
     "laughing": ("orange", laughing),
     "sleepy": ("indigo", sleepy),
+    "hello": ("green", hello),
+    "idea": ("yellow", idea),
+    "thinking": ("lilac", thinking),
+    "sideeye": ("olive", sideeye),
+    "eyeroll": ("sand", eyeroll),
+    "nervous": ("mint", nervous),
+    "tired": ("slate", tired),
+    "pouting": ("coral", pouting),
+    "sad": ("blue", sad),
+    "relieved": ("mint", relieved),
+    "amazed": ("gold", amazed),
+    "blushing": ("rose", blushing),
+    "angel": ("sky", angel),
+    "crowned": ("purple", crowned),
+    "zipped": ("grey", zipped),
+    "zen": ("teal", zen),
+    "confused": ("orange", confused),
 }
 
 

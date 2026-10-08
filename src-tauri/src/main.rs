@@ -42,7 +42,7 @@ fn get_tips(core: tauri::State<Handle>) -> Vec<TipView> {
 
 #[tauri::command]
 fn set_tip_muted(core: tauri::State<Handle>, id: String, muted: bool) {
-    core.with(|engine| engine.set_muted(&id, muted));
+    core.with(|engine| engine.set_muted(&id, muted, now()));
 }
 
 #[tauri::command]
@@ -90,7 +90,17 @@ fn preview_tip(core: tauri::State<Handle>) {
 /// How the character is feeling, for the sidebar.
 #[tauri::command]
 fn get_status(core: tauri::State<Handle>) -> Status {
-    core.with(|engine| engine.status(now()))
+    status(&core)
+}
+
+/// The engine's mood, except that an idle face is puzzled when Windows is not
+/// in English: it is watching menus it cannot read.
+fn status(core: &Handle) -> Status {
+    let mut status = core.with(|engine| engine.status(now()));
+    if matches!(status.mood, Mood::Knowing | Mood::Hello | Mood::Zen) && !windows_is_english() {
+        status.mood = Mood::Confused;
+    }
+    status
 }
 
 // ── Window and tray ──────────────────────────────────────────────────────
@@ -177,17 +187,42 @@ fn tray_face(mood: Mood) -> &'static [u8] {
         Mood::Party => include_bytes!("../icons/tray/party.png"),
         Mood::Laughing => include_bytes!("../icons/tray/laughing.png"),
         Mood::Sleepy => include_bytes!("../icons/tray/sleepy.png"),
+        Mood::Hello => include_bytes!("../icons/tray/hello.png"),
+        Mood::Idea => include_bytes!("../icons/tray/idea.png"),
+        Mood::Thinking => include_bytes!("../icons/tray/thinking.png"),
+        Mood::Sideeye => include_bytes!("../icons/tray/sideeye.png"),
+        Mood::Eyeroll => include_bytes!("../icons/tray/eyeroll.png"),
+        Mood::Nervous => include_bytes!("../icons/tray/nervous.png"),
+        Mood::Tired => include_bytes!("../icons/tray/tired.png"),
+        Mood::Pouting => include_bytes!("../icons/tray/pouting.png"),
+        Mood::Sad => include_bytes!("../icons/tray/sad.png"),
+        Mood::Relieved => include_bytes!("../icons/tray/relieved.png"),
+        Mood::Amazed => include_bytes!("../icons/tray/amazed.png"),
+        Mood::Blushing => include_bytes!("../icons/tray/blushing.png"),
+        Mood::Angel => include_bytes!("../icons/tray/angel.png"),
+        Mood::Crowned => include_bytes!("../icons/tray/crowned.png"),
+        Mood::Zipped => include_bytes!("../icons/tray/zipped.png"),
+        Mood::Zen => include_bytes!("../icons/tray/zen.png"),
+        Mood::Confused => include_bytes!("../icons/tray/confused.png"),
     }
 }
 
 /// The tray icon wears the character's current mood, with a tooltip to match.
 fn refresh_tray(app: &AppHandle) {
     let (Some(core), Some(tray)) = (app.try_state::<Handle>(), app.tray_by_id("main")) else { return };
-    let status = core.with(|engine| engine.status(now()));
-    let tooltip = match (&status.mood, &status.waiting_on) {
+    let status = status(&core);
+    let tooltip = match (&status.mood, &status.about) {
         (Mood::Sleepy, _) => "Keyflex is napping (paused)".to_string(),
+        (Mood::Zipped, _) => "Keyflex's lips are sealed about that one".to_string(),
+        (Mood::Sideeye, _) => "Keyflex saw that. It promised not to say anything".to_string(),
         (Mood::Proud, _) => "Keyflex is proud of you".to_string(),
+        (Mood::Amazed, _) => "Keyflex didn't have to teach you that one".to_string(),
+        (Mood::Tired, _) => "Keyflex has said enough for one day".to_string(),
         (Mood::Pleading, Some(keys)) => format!("Keyflex is still hoping you'll try {keys}"),
+        (Mood::Sad, Some(keys)) => format!("Keyflex has let {keys} go. It's fine"),
+        (Mood::Hello, _) => "Keyflex is new here. Do something the long way".to_string(),
+        (Mood::Zen, _) => "Keyflex has nothing to mention, and likes it that way".to_string(),
+        (Mood::Confused, _) => "Keyflex can only read English menus so far".to_string(),
         _ => "Keyflex is keeping an eye out".to_string(),
     };
     if let Ok(icon) = Image::from_bytes(tray_face(status.mood)) {

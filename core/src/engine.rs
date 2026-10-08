@@ -10,6 +10,13 @@ use crate::state::{Settings, State};
 const DAY: u64 = 24 * 60 * 60;
 /// How long the character stays visibly pleased after a celebration.
 const PROUD_FOR: u64 = 6 * 60 * 60;
+/// How long a passing reaction (a mute, a slip, a surprise) stays on its face.
+const BRIEFLY: u64 = 10 * 60;
+/// After its last mention it keeps hoping this long, then is sad for as long
+/// again, then moves on.
+const HOPING_FOR: u64 = 3 * DAY;
+/// With nothing to mention for this long, it is at peace.
+const QUIET_FOR: u64 = 7 * DAY;
 
 /// The character's expression. Each has its own colour, as emoji do.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
@@ -53,10 +60,51 @@ pub enum Mood {
     Laughing,
     /// Paused.
     Sleepy,
+    /// The very first tip, and a new user's tray: "hi, I'm new here."
+    Hello,
+    /// First showing: "oh! I've got one for this."
+    Idea,
+    /// First showing: "hmm, how do I put this?"
+    Thinking,
+    /// Second showing, and when a learned shortcut is skipped: "I saw that."
+    Sideeye,
+    /// Second showing: "here we go again."
+    Eyeroll,
+    /// Last showing: "third time... not that I'm counting."
+    Nervous,
+    /// Last showing, and once the day's tips are used up: worn out from talking.
+    Tired,
+    /// Last showing: "fine. Fine."
+    Pouting,
+    /// It has let a shortcut go, unlearned.
+    Sad,
+    /// Celebration: "phew, you tried it."
+    Relieved,
+    /// Celebration, and when the user turns out to know a shortcut already.
+    Amazed,
+    /// A shortcut has stuck: flattered.
+    Blushing,
+    /// A shortcut has stuck: saintly.
+    Angel,
+    /// A milestone: five, ten, twenty-five shortcuts learned.
+    Crowned,
+    /// Just told "Don't show again": lips sealed.
+    Zipped,
+    /// Nothing to mention for a week, and at peace with it.
+    Zen,
+    /// Windows is not in English, so it cannot read the menus.
+    Confused,
 }
 
 impl Mood {
-    pub const ALL: [Mood; 19] = [Mood::Knowing, Mood::Wink, Mood::Curious, Mood::Excited, Mood::Shocked, Mood::Cheeky, Mood::Smug, Mood::Deadpan, Mood::Grumpy, Mood::Pleading, Mood::Crying, Mood::Dizzy, Mood::Proud, Mood::Starstruck, Mood::Love, Mood::Cool, Mood::Party, Mood::Laughing, Mood::Sleepy];
+    pub const ALL: [Mood; 36] = [
+        Mood::Knowing, Mood::Wink, Mood::Curious, Mood::Excited, Mood::Shocked, Mood::Cheeky,
+        Mood::Smug, Mood::Deadpan, Mood::Grumpy, Mood::Pleading, Mood::Crying, Mood::Dizzy,
+        Mood::Proud, Mood::Starstruck, Mood::Love, Mood::Cool, Mood::Party, Mood::Laughing,
+        Mood::Sleepy, Mood::Hello, Mood::Idea, Mood::Thinking, Mood::Sideeye, Mood::Eyeroll,
+        Mood::Nervous, Mood::Tired, Mood::Pouting, Mood::Sad, Mood::Relieved, Mood::Amazed,
+        Mood::Blushing, Mood::Angel, Mood::Crowned, Mood::Zipped, Mood::Zen, Mood::Confused,
+    ];
 
     /// The mood's name, which is also the name of its image file.
     pub fn name(self) -> &'static str {
@@ -80,17 +128,37 @@ impl Mood {
             Mood::Party => "party",
             Mood::Laughing => "laughing",
             Mood::Sleepy => "sleepy",
+            Mood::Hello => "hello",
+            Mood::Idea => "idea",
+            Mood::Thinking => "thinking",
+            Mood::Sideeye => "sideeye",
+            Mood::Eyeroll => "eyeroll",
+            Mood::Nervous => "nervous",
+            Mood::Tired => "tired",
+            Mood::Pouting => "pouting",
+            Mood::Sad => "sad",
+            Mood::Relieved => "relieved",
+            Mood::Amazed => "amazed",
+            Mood::Blushing => "blushing",
+            Mood::Angel => "angel",
+            Mood::Crowned => "crowned",
+            Mood::Zipped => "zipped",
+            Mood::Zen => "zen",
+            Mood::Confused => "confused",
         }
     }
 }
 
 // The faces a tip can wear at each showing, and a celebration at each stage.
 // They are used in rotation, so the same face never appears twice running.
-const FIRST_FACES: &[Mood] = &[Mood::Wink, Mood::Curious, Mood::Excited];
-const SECOND_FACES: &[Mood] = &[Mood::Cheeky, Mood::Smug, Mood::Deadpan, Mood::Shocked];
-const LAST_FACES: &[Mood] = &[Mood::Pleading, Mood::Crying, Mood::Grumpy, Mood::Dizzy];
-const FIRST_USE_FACES: &[Mood] = &[Mood::Proud, Mood::Starstruck, Mood::Laughing, Mood::Cool];
-const LEARNED_FACES: &[Mood] = &[Mood::Party, Mood::Love, Mood::Starstruck];
+const FIRST_FACES: &[Mood] = &[Mood::Wink, Mood::Curious, Mood::Excited, Mood::Idea, Mood::Thinking];
+const SECOND_FACES: &[Mood] =
+    &[Mood::Cheeky, Mood::Smug, Mood::Deadpan, Mood::Shocked, Mood::Sideeye, Mood::Eyeroll];
+const LAST_FACES: &[Mood] =
+    &[Mood::Pleading, Mood::Crying, Mood::Grumpy, Mood::Dizzy, Mood::Tired, Mood::Pouting, Mood::Nervous];
+const FIRST_USE_FACES: &[Mood] =
+    &[Mood::Proud, Mood::Starstruck, Mood::Laughing, Mood::Cool, Mood::Relieved, Mood::Amazed];
+const LEARNED_FACES: &[Mood] = &[Mood::Party, Mood::Love, Mood::Starstruck, Mood::Angel, Mood::Blushing];
 
 /// Said the first time the user presses a shortcut after being shown its tip.
 const FIRST_USE_CHEERS: &[&str] = &[
@@ -106,6 +174,19 @@ const LEARNED_CHEERS: &[&str] = &[
     "Graduated: {keys}. My work here is done. For {topic}, anyway.",
     "That's {keys} locked in. One less thing for me to pester you about.",
 ];
+
+/// Learned-shortcut counts worth a crown.
+const MILESTONES: &[usize] = &[5, 10, 25, 50, 100];
+
+/// Said in place of the usual cheer when a milestone is reached.
+const MILESTONE_CHEERS: &[&str] = &[
+    "{keys} makes {count}. {count} shortcuts you'll never dig through a menu for again. Crown's on.",
+    "{count} shortcuts, all yours. {keys} was the one that did it. I'd bow, but I'm a keycap.",
+];
+
+/// Said when the last shortcut there is has been learned.
+const ALL_LEARNED_CHEER: &str =
+    "{keys} was the last one. That's all {count}. I have nothing left to teach you, and I'm fine. Totally fine.";
 
 /// How sparingly tips are shown.
 ///
@@ -192,8 +273,15 @@ pub struct Shown {
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Status {
     pub mood: Mood,
-    /// The shortcut it is still hoping the user will try.
-    pub waiting_on: Option<String>,
+    /// The shortcut the mood is about, when it is about one: the one it is
+    /// still hoping for, or has just given up on.
+    pub about: Option<String>,
+}
+
+impl Status {
+    fn plain(mood: Mood) -> Self {
+        Status { mood, about: None }
+    }
 }
 
 /// One tip as the Tips screen lists it.
@@ -261,13 +349,15 @@ impl Engine {
         }
     }
 
-    pub fn set_muted(&mut self, id: &str, muted: bool) {
+    pub fn set_muted(&mut self, id: &str, muted: bool, now: u64) {
         if !self.rules.iter().any(|rule| rule.id == id) {
             return;
         }
         let tip = self.state.tips.entry(id.to_string()).or_default();
         if tip.muted != muted {
             tip.muted = muted;
+            // Its lips stay sealed for a while; taking the mute back unseals them.
+            self.state.last_mute = if muted { now } else { 0 };
             self.dirty = true;
         }
     }
@@ -295,20 +385,54 @@ impl Engine {
     /// The character's overall mood right now.
     pub fn status(&self, now: u64) -> Status {
         let state = &self.state;
+        let within = |at: u64, span: u64| at > 0 && now.saturating_sub(at) < span;
         if state.settings.paused {
-            return Status { mood: Mood::Sleepy, waiting_on: None };
+            return Status::plain(Mood::Sleepy);
         }
-        if state.last_cheer > 0 && now.saturating_sub(state.last_cheer) < PROUD_FOR {
-            return Status { mood: Mood::Proud, waiting_on: None };
+        // Passing reactions first, the most recent kind of news on top.
+        if within(state.last_mute, BRIEFLY) {
+            return Status::plain(Mood::Zipped);
         }
-        // A tip shown more than once and still never tried.
-        let ignored = self.rules.iter().find(|rule| {
-            state.tips.get(&rule.id).is_some_and(|tip| tip.shown >= 2 && tip.used == 0 && !tip.muted)
-        });
-        match ignored {
-            Some(rule) => Status { mood: Mood::Pleading, waiting_on: Some(rule.keys()) },
-            None => Status { mood: Mood::Knowing, waiting_on: None },
+        if within(state.last_slip, BRIEFLY) && state.last_slip >= state.last_cheer {
+            return Status::plain(Mood::Sideeye);
         }
+        if within(state.last_cheer, PROUD_FOR) {
+            return Status::plain(Mood::Proud);
+        }
+        if within(state.last_knew, BRIEFLY) {
+            return Status::plain(Mood::Amazed);
+        }
+        let today = state.recent_shows.iter().filter(|&&at| now.saturating_sub(at) < DAY).count();
+        if today > 0 && today >= self.policy.max_per_day.unwrap_or(state.settings.tips_per_day) {
+            return Status::plain(Mood::Tired);
+        }
+
+        // Tips shown more than once and never tried: it hopes, then it lets go.
+        let ignored = || {
+            self.rules.iter().filter_map(|rule| {
+                let tip = state.tips.get(&rule.id)?;
+                (tip.shown >= 2 && tip.used == 0 && !tip.muted).then_some((rule, tip))
+            })
+        };
+        let has_more_to_say = |shown: u32| shown < self.policy.max_shows_per_tip;
+        if let Some((rule, _)) =
+            ignored().find(|(_, tip)| has_more_to_say(tip.shown) || within(tip.last_shown, HOPING_FOR))
+        {
+            return Status { mood: Mood::Pleading, about: Some(rule.keys()) };
+        }
+        if let Some((rule, _)) = ignored().find(|(_, tip)| within(tip.last_shown, 2 * HOPING_FOR)) {
+            return Status { mood: Mood::Sad, about: Some(rule.keys()) };
+        }
+
+        let last_shown = state.tips.values().map(|tip| tip.last_shown).max().unwrap_or(0);
+        if last_shown == 0 && state.cheers == 0 {
+            return Status::plain(Mood::Hello);
+        }
+        let learned = state.tips.values().any(|tip| tip.used >= self.policy.learned_after_uses);
+        if learned && !within(last_shown, QUIET_FOR) && !within(state.last_cheer, QUIET_FOR) {
+            return Status::plain(Mood::Zen);
+        }
+        Status::plain(Mood::Knowing)
     }
 
     /// False when the user has paused Keyflex or switched this app off, or
@@ -353,7 +477,10 @@ impl Engine {
                     tip.sightings = 0;
                     *dirty = true;
                     // Only celebrate shortcuts we taught, not ones the user already knew.
-                    if tip.shown > 0 && !tip.muted {
+                    // Those earn a quiet look of surprise on the tray face instead.
+                    if tip.shown == 0 {
+                        state.last_knew = now;
+                    } else if !tip.muted {
                         let learned = tip.used >= policy.learned_after_uses;
                         if learned || tip.used == 1 {
                             cheer = Some((index, learned));
@@ -401,15 +528,31 @@ impl Engine {
     /// Celebrate the user pressing a shortcut we taught them.
     fn cheer(&mut self, index: usize, learned: bool, now: u64) -> Shown {
         let rule = &self.rules[index];
-        let lines = if learned { LEARNED_CHEERS } else { FIRST_USE_CHEERS };
+        let nth = self.state.cheers as usize;
+        // How many shortcuts are theirs now, when this one just joined them.
+        let count = self.state.tips.values().filter(|tip| tip.used >= self.policy.learned_after_uses).count();
+        let milestone = learned && self.policy.retire_learned;
+        let (line, crowned) = if milestone && count == self.rules.len() && count > 1 {
+            (ALL_LEARNED_CHEER, true)
+        } else if milestone && MILESTONES.contains(&count) {
+            (MILESTONE_CHEERS[nth % MILESTONE_CHEERS.len()], true)
+        } else {
+            let lines = if learned { LEARNED_CHEERS } else { FIRST_USE_CHEERS };
+            (lines[nth % lines.len()], false)
+        };
         let keys = rule.keys();
-        let line = lines[self.state.cheers as usize % lines.len()]
+        let line = line
             .replace("{keys}", &keys.replace(" + ", "+"))
-            .replace("{topic}", &rule.topic);
+            .replace("{topic}", &rule.topic)
+            .replace("{count}", &count.to_string());
         self.state.cheers += 1;
         self.state.last_cheer = now;
         self.dirty = true;
-        let mood = next_face(&mut self.state, if learned { LEARNED_FACES } else { FIRST_USE_FACES });
+        let mood = if crowned {
+            Mood::Crowned
+        } else {
+            next_face(&mut self.state, if learned { LEARNED_FACES } else { FIRST_USE_FACES })
+        };
         Shown { id: rule.id.clone(), keys, line, mood, can_mute: false }
     }
 
@@ -421,7 +564,16 @@ impl Engine {
         let tip = state.tips.entry(rule.id.clone()).or_default();
 
         let learned = policy.retire_learned && tip.used >= policy.learned_after_uses;
-        if tip.muted || learned || tip.shown >= policy.max_shows_per_tip {
+        if tip.muted || tip.shown >= policy.max_shows_per_tip && !learned {
+            return None;
+        }
+        if learned {
+            // The promise was never to bring it up again, and it won't. The tray
+            // face may still give them a look, noted at most once a minute.
+            if now.saturating_sub(state.last_slip) >= 60 {
+                state.last_slip = now;
+                *dirty = true;
+            }
             return None;
         }
         // From here on the long way counts as a sighting, shown or not.
@@ -466,7 +618,8 @@ impl Engine {
         tip.last_shown = now;
         tip.sightings = 0;
         state.recent_shows.push(now);
-        let mood = next_face(state, faces);
+        // The first tip anyone ever sees is an introduction.
+        let mood = if tips_so_far == 0 && state.cheers == 0 { Mood::Hello } else { next_face(state, faces) };
         Some(Shown { id: rule.id.clone(), keys: rule.keys(), line, mood, can_mute: true })
     }
 }
@@ -736,7 +889,7 @@ mod tests {
         assert_eq!(shown.id, "downloads");
         assert_eq!(shown.keys, "Ctrl + J");
         assert_eq!(shown.line, "first line");
-        assert!(FIRST_FACES.contains(&shown.mood));
+        assert_eq!(shown.mood, Mood::Hello, "the first tip ever is an introduction");
         assert!(shown.can_mute);
         assert!(engine.take_dirty());
         assert!(!engine.take_dirty());
@@ -821,12 +974,12 @@ mod tests {
         let policy = Policy { min_gap_secs: 0, cooldowns_secs: vec![0], ..impatient() };
         let mut engine = engine(policy);
         let ctrl_j = key("chrome.exe", "", "Ctrl+J");
-        assert_eq!(engine.status(0), Status { mood: Mood::Knowing, waiting_on: None });
+        assert_eq!(engine.status(0), Status::plain(Mood::Hello));
 
-        assert!(FIRST_FACES.contains(&engine.handle(&downloads(), 0).unwrap().mood));
+        assert_eq!(engine.handle(&downloads(), 0).unwrap().mood, Mood::Hello);
         assert!(SECOND_FACES.contains(&engine.handle(&downloads(), 1).unwrap().mood));
         // Shown twice and never tried: the tray face starts pleading.
-        assert_eq!(engine.status(2), Status { mood: Mood::Pleading, waiting_on: Some("Ctrl + J".into()) });
+        assert_eq!(engine.status(2), Status { mood: Mood::Pleading, about: Some("Ctrl + J".into()) });
 
         // First use is celebrated, and cannot be muted.
         let cheer = engine.handle(&ctrl_j, 3).unwrap();
@@ -914,8 +1067,94 @@ mod tests {
     #[test]
     fn no_celebration_for_a_shortcut_the_user_already_knew() {
         let mut engine = engine(Policy::default());
-        assert_eq!(engine.handle(&key("chrome.exe", "", "Ctrl+J"), 0), None);
-        assert_eq!(engine.status(1).mood, Mood::Knowing);
+        assert_eq!(engine.handle(&key("chrome.exe", "", "Ctrl+J"), 1000), None);
+        assert_eq!(engine.status(1001).mood, Mood::Amazed, "but the tray face is impressed for a while");
+        assert_eq!(engine.status(1000 + BRIEFLY).mood, Mood::Hello);
+    }
+
+    #[test]
+    fn muting_seals_its_lips_for_a_while() {
+        let mut engine = engine(Policy::default());
+        assert!(engine.handle(&downloads(), 1000).is_some());
+        engine.set_muted("downloads", true, 1010);
+        assert_eq!(engine.status(1020).mood, Mood::Zipped);
+        assert_eq!(engine.status(1010 + BRIEFLY).mood, Mood::Knowing);
+        // Taking the mute back unseals them at once.
+        engine.set_muted("downloads", true, 5000);
+        engine.set_muted("downloads", false, 5010);
+        assert_eq!(engine.status(5020).mood, Mood::Knowing);
+    }
+
+    #[test]
+    fn slipping_back_after_learning_earns_a_look_but_never_a_tip() {
+        let mut engine = engine(Policy { min_gap_secs: 0, ..impatient() });
+        assert!(engine.handle(&downloads(), 1000).is_some());
+        let ctrl_j = key("chrome.exe", "", "Ctrl+J");
+        assert!(engine.handle(&ctrl_j, 1010).is_some());
+        assert!(engine.handle(&ctrl_j, 1020).is_some(), "learned");
+        assert_eq!(engine.status(1030).mood, Mood::Proud);
+
+        assert_eq!(engine.handle(&downloads(), 2000), None, "the promise holds");
+        assert_eq!(engine.status(2010).mood, Mood::Sideeye);
+        assert_eq!(engine.status(2000 + BRIEFLY).mood, Mood::Proud, "and the look passes");
+    }
+
+    #[test]
+    fn it_is_talked_out_once_the_days_tips_are_used_up() {
+        let policy = Policy { min_gap_secs: 0, max_per_day: Some(2), ..impatient() };
+        let mut engine = engine(policy);
+        let bin = |engine: &mut Engine, at| {
+            engine.handle(&key("explorer.exe", "Documents", "Delete"), at);
+            engine.handle(&key("explorer.exe", "Recycle Bin", "Delete"), at)
+        };
+        assert!(engine.handle(&downloads(), 1000).is_some());
+        assert_ne!(engine.status(1010).mood, Mood::Tired);
+        assert!(bin(&mut engine, 1020).is_some());
+        assert_eq!(engine.status(1030).mood, Mood::Tired);
+        assert_ne!(engine.status(1030 + DAY).mood, Mood::Tired);
+    }
+
+    #[test]
+    fn an_ignored_tip_is_hoped_for_then_mourned_then_let_go() {
+        let policy = Policy { min_gap_secs: 0, max_per_day: Some(usize::MAX), cooldowns_secs: vec![0], ..impatient() };
+        let mut engine = engine(policy);
+        for at in [1000, 1001, 1002] {
+            assert!(engine.handle(&downloads(), at).is_some());
+        }
+        assert_eq!(engine.handle(&downloads(), 1003), None, "three mentions were all it had");
+        let about = Some("Ctrl + J".to_string());
+        assert_eq!(engine.status(1002 + DAY), Status { mood: Mood::Pleading, about: about.clone() });
+        assert_eq!(engine.status(1002 + HOPING_FOR + DAY), Status { mood: Mood::Sad, about });
+        assert_eq!(engine.status(1002 + 2 * HOPING_FOR).mood, Mood::Knowing);
+    }
+
+    #[test]
+    fn a_long_quiet_spell_after_learning_is_peace() {
+        let mut engine = engine(Policy { min_gap_secs: 0, ..impatient() });
+        assert!(engine.handle(&downloads(), 1000).is_some());
+        let ctrl_j = key("chrome.exe", "", "Ctrl+J");
+        engine.handle(&ctrl_j, 1010);
+        engine.handle(&ctrl_j, 1020);
+        assert_eq!(engine.status(1020 + PROUD_FOR).mood, Mood::Knowing);
+        assert_eq!(engine.status(1020 + QUIET_FOR).mood, Mood::Zen);
+    }
+
+    #[test]
+    fn learning_the_last_shortcut_there_is_earns_a_crown() {
+        let mut engine = engine(Policy { min_gap_secs: 0, ..impatient() });
+        let ctrl_j = key("chrome.exe", "", "Ctrl+J");
+        let shift_delete = key("explorer.exe", "Documents", "Shift+Delete");
+        assert!(engine.handle(&downloads(), 1000).is_some());
+        engine.handle(&ctrl_j, 1010);
+        let first = engine.handle(&ctrl_j, 1020).unwrap();
+        assert!(LEARNED_FACES.contains(&first.mood), "one of two: an ordinary graduation");
+
+        engine.handle(&key("explorer.exe", "Documents", "Delete"), 2000);
+        assert!(engine.handle(&key("explorer.exe", "Recycle Bin", "Delete"), 2001).is_some());
+        engine.handle(&shift_delete, 2010);
+        let last = engine.handle(&shift_delete, 2020).unwrap();
+        assert_eq!(last.mood, Mood::Crowned);
+        assert!(last.line.contains("all 2"), "{}", last.line);
     }
 
     #[test]
@@ -941,13 +1180,13 @@ mod tests {
         assert!(engine.handle(&downloads(), 0).is_some());
         engine.take_dirty();
 
-        engine.set_muted("downloads", true);
+        engine.set_muted("downloads", true, 1);
         assert!(engine.take_dirty());
         assert_eq!(engine.handle(&downloads(), 1), None);
         assert!(engine.tips()[0].muted);
-        engine.set_muted("no-such-tip", true);
+        engine.set_muted("no-such-tip", true, 1);
         assert!(!engine.take_dirty());
-        engine.set_muted("downloads", false);
+        engine.set_muted("downloads", false, 1);
 
         // Paused, then one app switched off, then the user's own daily limit.
         let mut settings = engine.state().settings.clone();

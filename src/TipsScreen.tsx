@@ -79,8 +79,10 @@ function Card({ tip, where, peeked, onPeek }: { tip: Tip; where: string; peeked:
         <Keys keys={tip.keys} />
         {state === "learned" && <Mascot mood="proud" size={34} follow={false} className="still" />}
         {state === "found" && (
-          <Mascot mood={tip.shown > 1 ? "cheeky" : "wink"} size={34} follow={false} className="still" />
+          <Mascot mood={tip.shown > 2 ? "sad" : tip.shown > 1 ? "cheeky" : "wink"} size={34} follow={false} className="still" />
         )}
+        {state === "muted" && <Mascot mood="zipped" size={34} follow={false} className="still" />}
+        {state === "peeked" && <Mascot mood="curious" size={34} follow={false} className="still" />}
       </div>
       <span className="shortcut-line">{tip.line}</span>
       <span className="shortcut-foot">

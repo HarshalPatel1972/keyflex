@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFC58A"/>
+      <stop offset="1" stop-color="#FF9440"/>
+    </linearGradient>
+    <clipPath id="left-eye"><ellipse cx="186" cy="214" rx="62" ry="70"/></clipPath>
+    <clipPath id="right-eye"><ellipse cx="326" cy="214" rx="62" ry="70"/></clipPath>
+  </defs>
+  <rect x="32" y="60" width="448" height="420" rx="112" fill="#C25A08"/>
+  <rect x="32" y="44" width="448" height="408" rx="112" fill="#F07A1A"/>
+  <rect x="66" y="44" width="380" height="350" rx="88" fill="url(#top)"/>
+  <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FF6F6F" opacity="0.5"/>
+  <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FF6F6F" opacity="0.5"/>
+  <ellipse cx="186" cy="214" rx="54" ry="60" fill="#FFFFFF"/>
+  <circle cx="176" cy="202" r="30" fill="#0B1A14"/>
+  <circle cx="190" cy="188" r="11" fill="#FFFFFF"/>
+  <ellipse cx="326" cy="214" rx="66" ry="76" fill="#FFFFFF"/>
+  <circle cx="340" cy="224" r="38" fill="#0B1A14"/>
+  <circle cx="354" cy="210" r="13" fill="#FFFFFF"/>
+  <path d="M138 132 L224 140" fill="none" stroke="#A8480A" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M284 104 L374 84" fill="none" stroke="#A8480A" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M206 330 Q224 310 242 330 T278 330 T310 322" fill="none" stroke="#6B2A00" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M395.05 77.3 Q395.05 51.800000000000004 418 51.800000000000004 Q440.95 51.800000000000004 440.95 73.9 Q440.95 89.2 418 96 L418 104.5" fill="none" stroke="#FFFFFF" stroke-width="10.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="418" cy="123.2" r="6.8" fill="#FFFFFF"/>
+  <path d="M77.8 106.8 Q77.8 88.8 94 88.8 Q110.2 88.8 110.2 104.4 Q110.2 115.2 94 120 L94 126.0" fill="none" stroke="#FFFFFF" stroke-width="7.199999999999999" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="94" cy="139.2" r="4.8" fill="#FFFFFF"/>
+</svg>

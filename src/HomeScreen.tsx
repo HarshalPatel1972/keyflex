@@ -18,9 +18,53 @@ function chatter(status: Status, hidden: number): string[] {
       return ["You used a shortcut. I saw. I'm still not over it.", "That's my human.", "Do it again. I dare you."];
     case "pleading":
       return [
-        `Just try ${status.waiting_on ?? "it"}. Once. For me.`,
+        `Just try ${status.about ?? "it"}. Once. For me.`,
         "I'm not sad. This is just my face now.",
         "It's fine. I'll wait. I'm very good at waiting.",
+      ];
+    case "sad":
+      return [
+        `I said my three things about ${status.about ?? "it"}. I won't say a fourth.`,
+        "Some shortcuts just aren't meant to be.",
+        "I'll be okay by the weekend.",
+      ];
+    case "zipped":
+      return ["Lips sealed. That one's gone for good.", "Mmm. Mmm-mm.", "You can un-mute it under Shortcuts. Not that I'm hinting."];
+    case "sideeye":
+      return [
+        "You know the shortcut for that. I watched you learn it.",
+        "I promised not to bring it up. So this is me, not bringing it up.",
+        "Menus are nice too. I suppose.",
+      ];
+    case "amazed":
+      return [
+        "You knew that one without me? Who taught you? Was it another keycap?",
+        "Fine. I'll cross it off my list.",
+        "Now I'm wondering what else you know.",
+      ];
+    case "tired":
+      return [
+        "That's my lot for today. Even I get sick of my own voice.",
+        "More tomorrow. You can change how chatty I am in Settings.",
+        "Shh. Resting my key.",
+      ];
+    case "hello":
+      return [
+        "Hi! I'm new here. Carry on as normal and I'll pipe up when I spot a shortcut.",
+        "Open a menu somewhere. I'd love to meet it.",
+        "I only say each thing three times. Ask anyone.",
+      ];
+    case "zen":
+      return [
+        "A whole week with nothing to mention. I'm at peace.",
+        "Is this what retirement feels like?",
+        hidden > 0 ? `There are still ${hidden} I haven't had a reason to show you.` : "You've found every trick I know.",
+      ];
+    case "confused":
+      return [
+        "Your menus aren't in English and I can't read them yet. I'm trying.",
+        "I recognise the shapes. Not the words.",
+        "Shortcuts you open with the mouse, like Task Manager, I can still spot.",
       ];
     default:
       return [
