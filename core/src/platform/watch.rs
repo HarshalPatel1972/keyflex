@@ -34,10 +34,17 @@ use crate::rules::{self, Control, WEB_UI_APPS};
 pub enum Raw {
     Click(POINT),
     Key(Combo),
+    /// A key some rule cares about has been held down long enough to repeat.
+    Held(Combo),
     /// A window came to the front. `by_mouse`: the last thing the user did was
     /// click, with no typing or shortcut since.
     Foreground { hwnd: isize, by_mouse: bool },
+    /// A window was minimised by a click.
+    Minimized { hwnd: isize },
 }
+
+/// A held key is reported once it has repeated this many times (about a second).
+const HELD_REPEATS: u32 = 14;
 
 /// A window that appears this long after a click was opened by that click.
 const OPENED_BY_CLICK_MS: u64 = 6000;
@@ -47,25 +54,36 @@ const TYPING_MS: u64 = 8000;
 struct Hooks {
     tx: Sender<Raw>,
     combos: HashSet<u32>,
+    held: HashSet<u32>,
 }
 
 static HOOKS: OnceLock<Hooks> = OnceLock::new();
 /// The key currently held down, so auto-repeat counts as one press.
 static HELD_KEY: AtomicU32 = AtomicU32::new(0);
+/// How many times the held key has repeated.
+static REPEATS: AtomicU32 = AtomicU32::new(0);
 /// When the user last clicked, typed a plain key, or pressed any key at all
 /// (system uptime in milliseconds). Times only: which key is never kept.
 static LAST_CLICK: AtomicU64 = AtomicU64::new(0);
 static LAST_TYPED: AtomicU64 = AtomicU64::new(0);
+/// When a letter, digit, space or punctuation key was last pressed: writing, as
+/// opposed to steering with arrow keys.
+static LAST_TEXT: AtomicU64 = AtomicU64::new(0);
 static LAST_KEY: AtomicU64 = AtomicU64::new(0);
 
 fn now_ms() -> u64 {
     unsafe { GetTickCount64() }
 }
 
-/// Whether the user was typing moments ago.
+/// Whether the user was writing text moments ago.
 pub fn was_typing() -> bool {
-    let typed = LAST_TYPED.load(Ordering::Relaxed);
+    let typed = LAST_TEXT.load(Ordering::Relaxed);
     typed != 0 && now_ms().saturating_sub(typed) < TYPING_MS
+}
+
+/// Letters, digits, space and punctuation: the keys that produce text.
+fn is_text_key(vk: u16) -> bool {
+    matches!(vk, 0x20 | 0x30..=0x39 | 0x41..=0x5A | 0xBA..=0xC0 | 0xDB..=0xDE)
 }
 
 // ── Hooks ────────────────────────────────────────────────────────────────
@@ -78,9 +96,10 @@ pub fn make_dpi_aware() {
 }
 
 /// Install the hooks on the calling thread, which must then run [`pump`].
-/// `combos` are the only key combinations that will be reported.
-pub unsafe fn install(tx: Sender<Raw>, combos: HashSet<u32>) -> Result<()> {
-    HOOKS.set(Hooks { tx, combos }).ok();
+/// `combos` are the only key combinations that will be reported, and `held`
+/// the only keys reported for being held down.
+pub unsafe fn install(tx: Sender<Raw>, combos: HashSet<u32>, held: HashSet<u32>) -> Result<()> {
+    HOOKS.set(Hooks { tx, combos, held }).ok();
     SetWindowsHookExW(WH_MOUSE_LL, Some(mouse_proc), None, 0)?;
     SetWindowsHookExW(WH_KEYBOARD_LL, Some(keyboard_proc), None, 0)?;
     // Delivered to this thread's message loop; nothing is injected into other apps.
@@ -93,12 +112,21 @@ pub unsafe fn install(tx: Sender<Raw>, combos: HashSet<u32>) -> Result<()> {
         0,
         WINEVENT_OUTOFCONTEXT,
     );
+    SetWinEventHook(
+        EVENT_SYSTEM_MINIMIZESTART,
+        EVENT_SYSTEM_MINIMIZESTART,
+        None,
+        Some(foreground_proc),
+        0,
+        0,
+        WINEVENT_OUTOFCONTEXT,
+    );
     Ok(())
 }
 
 unsafe extern "system" fn foreground_proc(
     _hook: HWINEVENTHOOK,
-    _event: u32,
+    event: u32,
     hwnd: HWND,
     _object: i32,
     _child: i32,
@@ -110,7 +138,18 @@ unsafe extern "system" fn foreground_proc(
     let by_mouse = click != 0
         && now_ms().saturating_sub(click) < OPENED_BY_CLICK_MS
         && LAST_KEY.load(Ordering::Relaxed) < click;
+    if event == EVENT_SYSTEM_MINIMIZESTART {
+        if by_mouse {
+            let _ = hooks.tx.send(Raw::Minimized { hwnd: hwnd.0 as isize });
+        }
+        return;
+    }
     let _ = hooks.tx.send(Raw::Foreground { hwnd: hwnd.0 as isize, by_mouse });
+}
+
+/// Whether a screen point is on the taskbar.
+pub fn on_taskbar(pt: POINT) -> bool {
+    unsafe { is_taskbar(GetAncestor(WindowFromPoint(pt), GA_ROOT)) }
 }
 
 /// Every visible top-level window right now, so they are not mistaken for new ones later.
@@ -176,7 +215,10 @@ unsafe extern "system" fn keyboard_proc(ncode: i32, wparam: WPARAM, lparam: LPAR
         match wparam.0 as u32 {
             WM_KEYDOWN | WM_SYSKEYDOWN => {
                 if HELD_KEY.swap(vk, Ordering::Relaxed) != vk {
+                    REPEATS.store(0, Ordering::Relaxed);
                     report_key(vk as u16);
+                } else if REPEATS.fetch_add(1, Ordering::Relaxed) + 1 == HELD_REPEATS {
+                    report_held(vk as u16);
                 }
             }
             WM_KEYUP | WM_SYSKEYUP => HELD_KEY.store(0, Ordering::Relaxed),
@@ -195,6 +237,9 @@ unsafe fn report_key(vk: u16) {
     // A key with no Ctrl, Alt or Win held is typing (or navigating by keyboard).
     if !(down(VK_CONTROL) || down(VK_MENU) || down(VK_LWIN) || down(VK_RWIN)) {
         LAST_TYPED.store(now, Ordering::Relaxed);
+        if is_text_key(vk) {
+            LAST_TEXT.store(now, Ordering::Relaxed);
+        }
     }
 
     // AltGr arrives as left Ctrl + right Alt and types a character; it is not a shortcut.
@@ -210,6 +255,20 @@ unsafe fn report_key(vk: u16) {
     let combo = Combo { mods, vk };
     if hooks.combos.contains(&combo.code()) {
         let _ = hooks.tx.send(Raw::Key(combo));
+    }
+}
+
+/// A key has been held until it repeats. Forward it only if a rule asks about
+/// that key being held, and only when held on its own.
+unsafe fn report_held(vk: u16) {
+    let Some(hooks) = HOOKS.get() else { return };
+    let down = |key: VIRTUAL_KEY| GetAsyncKeyState(key.0 as i32) < 0;
+    if down(VK_CONTROL) || down(VK_MENU) || down(VK_SHIFT) || down(VK_LWIN) || down(VK_RWIN) {
+        return;
+    }
+    let combo = Combo { mods: 0, vk };
+    if hooks.held.contains(&combo.code()) {
+        let _ = hooks.tx.send(Raw::Held(combo));
     }
 }
 

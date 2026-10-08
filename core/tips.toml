@@ -4,6 +4,8 @@
 #   id          unique, stable name (tip history is stored under it)
 #   apps        exe names the tip applies to, lowercase; ["*"] means every app
 #   shortcut    the better way; pressing it counts as "the user knows this"
+#   also        other shortcuts that count as knowing it too (optional)
+#   keys        how the answer is shown, if not simply the shortcut (optional)
 #   topic       what the tip is about, as it reads mid-sentence ("Downloads",
 #               "renaming"); used when celebrating: "I'll never bring up ... again"
 #   within_secs for multi-step tips, how long the whole sequence may take (default 120)
@@ -13,11 +15,15 @@
 #                 2nd  cheeky, "we talked about this" (half-closed eyes)
 #                 3rd  a dramatic last plea            (big wet eyes)
 #   [[tip.step]] what the user has to do, in order, for the tip to fire.
+#               `times = 3` means the step has to happen three times.
 #               `any` lists alternatives; each alternative is exactly one of
 #                 is     = "copy"         a button/menu item named exactly this
 #                 click  = "name prefix"  a button/menu item whose name starts with this
 #                 key    = "Delete"       a key or combo
 #                 opened = true           a new window of the app, opened using only the mouse
+#                 held   = "Backspace"    a key held down until it repeats
+#                 switched = true         switching to an open window by clicking the taskbar
+#                 minimized = true        minimising a window with the mouse
 #               (names are compared without case, "&", "..." or a trailing shortcut)
 #               optionally narrowed by
 #                 types = ["MenuItem"]    Button | MenuItem | SplitButton
@@ -152,6 +158,93 @@ lines = [
 ]
 [[tip.step]]
 any = [{ is = "print", types = ["MenuItem"] }]
+
+# ── Habits ───────────────────────────────────────────────────────────────
+# Not a menu item with a shortcut, but a slow way of doing something. These
+# are noticed from patterns: a key held down, the same thing done several
+# times in a row. `times` on a step means it has to happen that often.
+
+[[tip]]
+id = "habit.delete-word"
+apps = ["*"]
+shortcut = "Ctrl+Backspace"
+topic = "deleting whole words"
+lines = [
+  "Holding Backspace? Ctrl+Backspace deletes a whole word in one tap.",
+  "Backspace, backspace, backspace... Ctrl+Backspace eats a word at a time. Your finger can rest.",
+  "Last time: Ctrl+Backspace. One word, one tap. The Backspace key is begging for mercy.",
+]
+[[tip.step]]
+any = [{ held = "Backspace", while_typing = true }]
+
+[[tip]]
+id = "habit.jump-words"
+apps = ["*"]
+shortcut = "Ctrl+Right"
+also = ["Ctrl+Left", "Home", "End"]
+keys = "Ctrl + \u2190 \u2192"
+topic = "moving through text"
+lines = [
+  "Holding the arrow key to cross a line? Ctrl+Arrow jumps a word at a time. Home and End jump to the edges.",
+  "The long walk along the line again. Ctrl+Arrow takes it in strides. Home and End teleport.",
+  "Final hint: Ctrl+Arrow, Home, End. You've been walking when you could be skipping.",
+]
+[[tip.step]]
+any = [{ held = "Left", while_typing = true }, { held = "Right", while_typing = true }]
+
+[[tip]]
+id = "habit.switch-windows"
+apps = ["*"]
+shortcut = "Alt+Tab"
+topic = "switching windows"
+within_secs = 45
+lines = [
+  "Back and forth on the taskbar? Alt+Tab flips to your last window instantly.",
+  "Taskbar ping-pong again. Alt+Tab bounces between two windows without the trip down there.",
+  "Last time: Alt+Tab. Hold Alt, tap Tab. The taskbar could use the break.",
+]
+[[tip.step]]
+times = 4
+any = [{ switched = true }]
+
+[[tip]]
+id = "habit.clipboard-history"
+apps = ["*"]
+shortcut = "Win+V"
+topic = "copying several things"
+within_secs = 150
+lines = [
+  "Ferrying things across one at a time? Win+V remembers the last 25 things you copied.",
+  "Copy, switch, paste, switch back... Copy everything first, then Win+V to pick each one. (Windows asks to switch it on the first time.)",
+  "Final offer: Win+V. Your clipboard has a memory. You just have to ask it.",
+]
+[[tip.step]]
+any = [{ key = "Ctrl+C" }]
+[[tip.step]]
+any = [{ key = "Ctrl+V" }]
+[[tip.step]]
+any = [{ key = "Ctrl+C" }]
+[[tip.step]]
+any = [{ key = "Ctrl+V" }]
+[[tip.step]]
+any = [{ key = "Ctrl+C" }]
+[[tip.step]]
+any = [{ key = "Ctrl+V" }]
+
+[[tip]]
+id = "habit.show-desktop"
+apps = ["*"]
+shortcut = "Win+D"
+topic = "getting to the desktop"
+within_secs = 20
+lines = [
+  "Minimising windows one by one? Win+D clears the lot and shows the desktop.",
+  "Another round of minimise, minimise, minimise. Win+D does them all at once, and brings them back.",
+  "Last time: Win+D. Everything out of the way in one move.",
+]
+[[tip.step]]
+times = 3
+any = [{ minimized = true }]
 
 # ── Browsers ─────────────────────────────────────────────────────────────
 

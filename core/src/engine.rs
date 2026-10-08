@@ -210,11 +210,19 @@ pub struct TipView {
     pub learned: bool,
 }
 
-/// How far the user is through a multi-step rule.
+/// How far the user is through a rule's steps.
 #[derive(Clone, Copy, Default)]
 struct Progress {
     step: usize,
+    /// Times the current step has happened so far.
+    count: u32,
     started: u64,
+}
+
+impl Progress {
+    fn begun(&self) -> bool {
+        self.step > 0 || self.count > 0
+    }
 }
 
 pub struct Engine {
@@ -273,7 +281,7 @@ impl Engine {
                 TipView {
                     id: rule.id.clone(),
                     apps: rule.apps.clone(),
-                    keys: rule.shortcut.label(),
+                    keys: rule.keys(),
                     line: rule.lines[0].clone(),
                     shown: tip.shown,
                     last_shown: tip.last_shown,
@@ -298,7 +306,7 @@ impl Engine {
             state.tips.get(&rule.id).is_some_and(|tip| tip.shown >= 2 && tip.used == 0 && !tip.muted)
         });
         match ignored {
-            Some(rule) => Status { mood: Mood::Pleading, waiting_on: Some(rule.shortcut.label()) },
+            Some(rule) => Status { mood: Mood::Pleading, waiting_on: Some(rule.keys()) },
             None => Status { mood: Mood::Knowing, waiting_on: None },
         }
     }
@@ -337,7 +345,7 @@ impl Engine {
             let progress = &mut progress[index];
 
             // The user did it the better way.
-            if matches!(event.action, Action::Key(combo) if combo == rule.shortcut) {
+            if matches!(event.action, Action::Key(combo) if rule.is_answer(combo)) {
                 let tip = state.tips.entry(rule.id.clone()).or_default();
                 if tip.used < policy.learned_after_uses {
                     tip.used += 1;
@@ -359,20 +367,28 @@ impl Engine {
                 continue;
             }
 
-            if progress.step > 0 && now.saturating_sub(progress.started) > rule.within_secs {
+            if progress.begun() && now.saturating_sub(progress.started) > rule.within_secs {
                 *progress = Progress::default();
             }
-            if rule.steps[progress.step].matches(event) {
-                if progress.step == 0 {
+            let step = &rule.steps[progress.step];
+            let matched = step.matches(event);
+            if !matched && progress.step > 0 && rule.steps[0].matches(event) {
+                // Not the next step, but the first one again: start over from here.
+                *progress = Progress::default();
+            }
+            if matched || !progress.begun() && rule.steps[0].matches(event) {
+                if !progress.begun() {
                     progress.started = now;
                 }
-                progress.step += 1;
+                progress.count += 1;
+                if progress.count >= rule.steps[progress.step].times {
+                    progress.step += 1;
+                    progress.count = 0;
+                }
                 if progress.step == rule.steps.len() {
                     *progress = Progress::default();
                     completed.get_or_insert(index);
                 }
-            } else if progress.step > 0 && rule.steps[0].matches(event) {
-                *progress = Progress { step: 1, started: now };
             }
         }
 
@@ -386,7 +402,7 @@ impl Engine {
     fn cheer(&mut self, index: usize, learned: bool, now: u64) -> Shown {
         let rule = &self.rules[index];
         let lines = if learned { LEARNED_CHEERS } else { FIRST_USE_CHEERS };
-        let keys = rule.shortcut.label();
+        let keys = rule.keys();
         let line = lines[self.state.cheers as usize % lines.len()]
             .replace("{keys}", &keys.replace(" + ", "+"))
             .replace("{topic}", &rule.topic);
@@ -451,7 +467,7 @@ impl Engine {
         tip.sightings = 0;
         state.recent_shows.push(now);
         let mood = next_face(state, faces);
-        Some(Shown { id: rule.id.clone(), keys: rule.shortcut.label(), line, mood, can_mute: true })
+        Some(Shown { id: rule.id.clone(), keys: rule.keys(), line, mood, can_mute: true })
     }
 }
 
@@ -596,6 +612,110 @@ mod tests {
         };
         assert_eq!(engine.handle(&bold(false), 0), None, "browsing with the mouse: the button is fine");
         assert_eq!(engine.handle(&bold(true), 1).unwrap().id, "bold");
+    }
+
+    const HABIT_RULES: &str = r#"
+        [[tip]]
+        id = "delete-word"
+        apps = ["*"]
+        shortcut = "Ctrl+Backspace"
+        topic = "deleting words"
+        lines = ["word line"]
+        [[tip.step]]
+        any = [{ held = "Backspace", while_typing = true }]
+
+        [[tip]]
+        id = "jump"
+        apps = ["*"]
+        shortcut = "Ctrl+Right"
+        also = ["Ctrl+Left", "Home", "End"]
+        keys = "Ctrl + Arrow"
+        topic = "moving through text"
+        lines = ["jump line"]
+        [[tip.step]]
+        any = [{ held = "Left" }, { held = "Right" }]
+
+        [[tip]]
+        id = "alt-tab"
+        apps = ["*"]
+        shortcut = "Alt+Tab"
+        topic = "switching windows"
+        within_secs = 45
+        lines = ["switch line"]
+        [[tip.step]]
+        times = 4
+        any = [{ switched = true }]
+
+        [[tip]]
+        id = "clipboard"
+        apps = ["*"]
+        shortcut = "Win+V"
+        topic = "copying several things"
+        within_secs = 150
+        lines = ["clipboard line"]
+        [[tip.step]]
+        any = [{ key = "Ctrl+C" }]
+        [[tip.step]]
+        any = [{ key = "Ctrl+V" }]
+        [[tip.step]]
+        any = [{ key = "Ctrl+C" }]
+        [[tip.step]]
+        any = [{ key = "Ctrl+V" }]
+    "#;
+
+    fn habits() -> Engine {
+        Engine::new(rules::parse(HABIT_RULES).unwrap(), State::default(), Policy::demo())
+    }
+
+    fn doing<'a>(app: &'a str, typing: bool, action: Action<'a>) -> Event<'a> {
+        Event { app, window: "", typing, class: "", action }
+    }
+
+    #[test]
+    fn holding_a_key_is_a_habit_but_only_while_writing() {
+        let mut engine = habits();
+        let backspace = Combo::parse("Backspace").unwrap();
+        // Held in a game or a video editor: none of our business.
+        assert_eq!(engine.handle(&doing("resolve.exe", false, Action::Held(backspace)), 0), None);
+        let shown = engine.handle(&doing("winword.exe", true, Action::Held(backspace)), 1).unwrap();
+        assert_eq!((shown.id.as_str(), shown.keys.as_str()), ("delete-word", "Ctrl + Backspace"));
+    }
+
+    #[test]
+    fn a_tip_can_name_its_keys_and_accept_several_answers() {
+        let mut engine = habits();
+        let shown = engine.handle(&doing("notepad.exe", false, Action::Held(Combo::parse("Left").unwrap())), 0).unwrap();
+        assert_eq!(shown.keys, "Ctrl + Arrow");
+        // Home is not the tip's shortcut, but it shows the user knows a better way.
+        engine.handle(&key("notepad.exe", "", "Home"), 1);
+        assert_eq!(engine.state().tips["jump"].used, 1);
+    }
+
+    #[test]
+    fn something_done_several_times_in_a_short_while_is_a_habit() {
+        let mut engine = habits();
+        let switch = |engine: &mut Engine, at| engine.handle(&doing("chrome.exe", false, Action::Switched), at);
+
+        // Three switches, then a long pause: not a pattern.
+        assert_eq!((switch(&mut engine, 0), switch(&mut engine, 5), switch(&mut engine, 10)), (None, None, None));
+        assert_eq!(switch(&mut engine, 100), None, "the first three were too long ago");
+        // Four inside the window.
+        assert_eq!((switch(&mut engine, 105), switch(&mut engine, 110)), (None, None));
+        assert_eq!(switch(&mut engine, 115).unwrap().id, "alt-tab");
+    }
+
+    #[test]
+    fn ferrying_things_between_windows_suggests_clipboard_history() {
+        let mut engine = habits();
+        let press = |engine: &mut Engine, combo, at| engine.handle(&key("chrome.exe", "", combo), at);
+        assert_eq!(press(&mut engine, "Ctrl+C", 0), None);
+        assert_eq!(press(&mut engine, "Ctrl+V", 10), None);
+        // Copying twice in a row just restarts the pattern.
+        assert_eq!(press(&mut engine, "Ctrl+C", 20), None);
+        assert_eq!(press(&mut engine, "Ctrl+C", 25), None);
+        assert_eq!(press(&mut engine, "Ctrl+V", 30), None);
+        assert_eq!(press(&mut engine, "Ctrl+C", 40), None);
+        assert_eq!(press(&mut engine, "Ctrl+V", 50).unwrap().id, "clipboard");
     }
 
     #[test]

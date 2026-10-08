@@ -89,6 +89,7 @@ impl Handle {
 
 pub fn start(engine: Engine, options: Options) -> Handle {
     let combos = rules::combos(engine.rules());
+    let held = rules::held_keys(engine.rules());
     let handle = Handle(Arc::new(Shared { engine: Mutex::new(engine), options }));
 
     let muter = handle.clone();
@@ -103,7 +104,7 @@ pub fn start(engine: Engine, options: Options) -> Handle {
         if let Err(error) = popup::create() {
             notes.0.options.note(|| format!("tips cannot be shown: {}", error.message()));
         }
-        if let Err(error) = watch::install(tx, combos) {
+        if let Err(error) = watch::install(tx, combos, held) {
             notes.0.options.note(|| format!("cannot watch for input: {}", error.message()));
             return;
         }
@@ -125,12 +126,15 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
     };
     // Windows already seen at the front; anything else that appears is new.
     let mut seen: HashSet<isize> = watch::open_windows().into_iter().collect();
+    // Whether the user's latest click landed on the taskbar.
+    let mut clicked_taskbar = false;
 
     for raw in rx {
         let now = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs());
 
         let shown = match raw {
             Raw::Click(point) => {
+                clicked_taskbar = watch::on_taskbar(point);
                 let typing = watch::was_typing();
                 let watching = |app: &str| handle.with(|engine| engine.is_watching(app));
                 inspector.as_ref().and_then(|inspector| inspector.inspect(point, watching)).and_then(|clicked| {
@@ -147,9 +151,35 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
                     Event { app: &app, window: &window, typing: false, class: "", action: Action::Key(combo) };
                 handle.with(|engine| engine.handle(&event, now))
             }
+            Raw::Held(combo) => {
+                let (app, window) = watch::foreground();
+                let typing = watch::was_typing();
+                options.note(|| format!("[{app}] held {}", combo.label()));
+                let event = Event { app: &app, window: &window, typing, class: "", action: Action::Held(combo) };
+                handle.with(|engine| engine.handle(&event, now))
+            }
+            Raw::Minimized { hwnd } => {
+                let app = watch::app_of_window(hwnd);
+                options.note(|| format!("[{app}] minimised with the mouse"));
+                let event = Event { app: &app, window: "", typing: false, class: "", action: Action::Minimized };
+                handle.with(|engine| engine.handle(&event, now))
+            }
             Raw::Foreground { hwnd, by_mouse } => {
-                // Only a window never seen before counts as opened, and only if the mouse did it.
-                if seen.insert(hwnd) && by_mouse {
+                // A window never seen before counts as opened, if the mouse did it.
+                if !seen.insert(hwnd) {
+                    // An existing window, brought forward from the taskbar. Clicking the
+                    // taskbar also brings the taskbar itself forward for a moment; that
+                    // and Windows' other shell surfaces are not app windows.
+                    let app = watch::app_of_window(hwnd);
+                    let shell = app == "explorer.exe" && watch::window_class(hwnd) != "CabinetWClass";
+                    if by_mouse && clicked_taskbar && !shell {
+                        options.note(|| format!("[{app}] switched to from the taskbar"));
+                        let event = Event { app: &app, window: "", typing: false, class: "", action: Action::Switched };
+                        handle.with(|engine| engine.handle(&event, now))
+                    } else {
+                        None
+                    }
+                } else if by_mouse {
                     let app = watch::app_of_window(hwnd);
                     let class = watch::window_class(hwnd);
                     options.note(|| format!("[{app}] opened with the mouse ({class})"));
