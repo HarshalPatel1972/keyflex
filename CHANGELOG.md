@@ -15,9 +15,12 @@ it notices when you do something the long way and shows the shortcut for it.
   Microsoft Office, Notepad and VS Code
 - A rule engine driven by `core/tips.toml`: single clicks, ordered multi-step
   sequences, "only while typing" and "opened with the mouse" triggers
-- The Keyflex character, with six moods: tips escalate over three showings,
-  and using a taught shortcut is celebrated
-- A tray icon that wears the character's mood
+- The Keyflex character, with 36 moods, each in its own colour: tips escalate
+  over three showings, and using a taught shortcut is celebrated
+- Reactions beyond tips: it zips its lips when told "Don't show again", wears a
+  crown at 5, 10 and 25 learned shortcuts, and says hello with its first tip
+- A tray icon that wears the character's mood, including when it is talked out
+  for the day, has let a shortcut go, or has had nothing to mention for a week
 - Limits on how often tips appear: a daily cap, a quiet gap, growing cooldowns,
   and retirement once a shortcut is learned
 - "Don't show again" on every tip, per-app switches and Pause

@@ -20,10 +20,13 @@ fn sample(name: &str) -> Option<(Mood, &'static str, &'static str)> {
         Mood::Proud | Mood::Starstruck | Mood::Laughing | Mood::Cool | Mood::Party | Mood::Love => {
             (mood, "", "Ctrl+J! You actually did it. I am not crying, you are crying.")
         }
-        Mood::Pleading | Mood::Crying | Mood::Grumpy | Mood::Dizzy => {
+        Mood::Relieved | Mood::Amazed | Mood::Angel | Mood::Blushing | Mood::Crowned => {
+            (mood, "", "Ctrl+J is yours now. I will never bring up Downloads again. Promise.")
+        }
+        Mood::Pleading | Mood::Crying | Mood::Grumpy | Mood::Dizzy | Mood::Tired | Mood::Pouting | Mood::Nervous => {
             (mood, "browser.downloads", "Last time I will say it: Ctrl+J opens Downloads. After this, I suffer in silence.")
         }
-        Mood::Cheeky | Mood::Smug | Mood::Deadpan | Mood::Shocked => {
+        Mood::Cheeky | Mood::Smug | Mood::Deadpan | Mood::Shocked | Mood::Sideeye | Mood::Eyeroll => {
             (mood, "browser.downloads", "The menu again? Ctrl+J is right there. I am not mad. I am just... watching.")
         }
         _ => (mood, "browser.downloads", "Psst. Two clicks to reach Downloads? Ctrl+J just walks in the front door."),

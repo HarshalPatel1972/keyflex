@@ -87,13 +87,18 @@ impl Handle {
     }
 }
 
+/// Seconds since the Unix epoch.
+fn now() -> u64 {
+    SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs())
+}
+
 pub fn start(engine: Engine, options: Options) -> Handle {
     let combos = rules::combos(engine.rules());
     let held = rules::held_keys(engine.rules());
     let handle = Handle(Arc::new(Shared { engine: Mutex::new(engine), options }));
 
     let muter = handle.clone();
-    popup::on_mute(move |id| muter.with(|engine| engine.set_muted(id, true)));
+    popup::on_mute(move |id| muter.with(|engine| engine.set_muted(id, true, now())));
 
     let (tx, rx) = channel();
     let worker = handle.clone();
@@ -130,7 +135,7 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
     let mut clicked_taskbar = false;
 
     for raw in rx {
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs());
+        let now = now();
 
         let shown = match raw {
             Raw::Click(point) => {

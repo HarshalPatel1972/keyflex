@@ -24,6 +24,9 @@ const HIDE_TIMER: usize = 1;
 const POP_TIMER: usize = 2;
 const VISIBLE_MS: u32 = 8000;
 const MUTE_LABEL: &str = "Don't show again";
+/// What it says, and for how long, once that has been clicked.
+const SEALED_LINE: &str = "Lips sealed. You won't hear about this one from me again.";
+const SEALED_MS: u32 = 2200;
 
 /// The pop-in animation: frames, milliseconds per frame, how far it rises.
 const POP_FRAMES: i32 = 14;
@@ -205,6 +208,7 @@ unsafe extern "system" fn wnd_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam:
             };
             if let (Some(id), Some(callback)) = (muted_id, ON_MUTE.get()) {
                 callback(&id);
+                return seal(hwnd);
             }
             hide(hwnd)
         }
@@ -215,6 +219,20 @@ unsafe extern "system" fn wnd_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam:
         }
         _ => DefWindowProcW(hwnd, msg, wparam, lparam),
     }
+}
+
+/// The reply to "Don't show again": the same popup zips its lips, then leaves.
+unsafe fn seal(hwnd: HWND) -> LRESULT {
+    {
+        let mut tip = TIP.lock().unwrap();
+        tip.id.clear();
+        tip.body = SEALED_LINE.to_owned();
+        tip.mood = Mood::Zipped;
+        tip.face = face_pixels(tip.mood, tip.face_size);
+    }
+    let _ = InvalidateRect(hwnd, None, true);
+    SetTimer(hwnd, HIDE_TIMER, SEALED_MS, None);
+    LRESULT(0)
 }
 
 unsafe fn hide(hwnd: HWND) -> LRESULT {
@@ -327,6 +345,23 @@ fn face_png(mood: Mood) -> &'static [u8] {
         Mood::Party => include_bytes!("../../assets/moods/party.png"),
         Mood::Laughing => include_bytes!("../../assets/moods/laughing.png"),
         Mood::Sleepy => include_bytes!("../../assets/moods/sleepy.png"),
+        Mood::Hello => include_bytes!("../../assets/moods/hello.png"),
+        Mood::Idea => include_bytes!("../../assets/moods/idea.png"),
+        Mood::Thinking => include_bytes!("../../assets/moods/thinking.png"),
+        Mood::Sideeye => include_bytes!("../../assets/moods/sideeye.png"),
+        Mood::Eyeroll => include_bytes!("../../assets/moods/eyeroll.png"),
+        Mood::Nervous => include_bytes!("../../assets/moods/nervous.png"),
+        Mood::Tired => include_bytes!("../../assets/moods/tired.png"),
+        Mood::Pouting => include_bytes!("../../assets/moods/pouting.png"),
+        Mood::Sad => include_bytes!("../../assets/moods/sad.png"),
+        Mood::Relieved => include_bytes!("../../assets/moods/relieved.png"),
+        Mood::Amazed => include_bytes!("../../assets/moods/amazed.png"),
+        Mood::Blushing => include_bytes!("../../assets/moods/blushing.png"),
+        Mood::Angel => include_bytes!("../../assets/moods/angel.png"),
+        Mood::Crowned => include_bytes!("../../assets/moods/crowned.png"),
+        Mood::Zipped => include_bytes!("../../assets/moods/zipped.png"),
+        Mood::Zen => include_bytes!("../../assets/moods/zen.png"),
+        Mood::Confused => include_bytes!("../../assets/moods/confused.png"),
     }
 }
 

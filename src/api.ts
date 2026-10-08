@@ -33,13 +33,30 @@ export type Mood =
   | "cool"
   | "party"
   | "laughing"
-  | "sleepy";
+  | "sleepy"
+  | "hello"
+  | "idea"
+  | "thinking"
+  | "sideeye"
+  | "eyeroll"
+  | "nervous"
+  | "tired"
+  | "pouting"
+  | "sad"
+  | "relieved"
+  | "amazed"
+  | "blushing"
+  | "angel"
+  | "crowned"
+  | "zipped"
+  | "zen"
+  | "confused";
 
 /** How the character is feeling overall. */
 export interface Status {
   mood: Mood;
-  /** The shortcut it is still hoping you will try, e.g. "Ctrl + J". */
-  waiting_on: string | null;
+  /** The shortcut the mood is about, if any, e.g. "Ctrl + J". */
+  about: string | null;
 }
 
 export interface Settings {

@@ -77,6 +77,12 @@ pub struct State {
     pub last_cheer: u64,
     /// Steps through the character's faces so they rotate.
     pub faces: u32,
+    /// When the user last said "Don't show again", seconds since the Unix epoch.
+    pub last_mute: u64,
+    /// When the long way was last seen for a shortcut already learned.
+    pub last_slip: u64,
+    /// When the user last pressed a shortcut nobody had to teach them.
+    pub last_knew: u64,
 }
 
 impl State {

@@ -29,7 +29,7 @@ function App() {
   const [screen, setScreen] = useState<Screen | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [tips, setTips] = useState<Tip[]>([]);
-  const [status, setStatus] = useState<Status>({ mood: "knowing", waiting_on: null });
+  const [status, setStatus] = useState<Status>({ mood: "knowing", about: null });
   // Counts up each time a shortcut becomes "yours" while the window is open.
   const [parties, setParties] = useState(0);
   const learnedBefore = useRef<number | null>(null);
@@ -138,7 +138,23 @@ function moodLine(status: Status): string {
     case "proud":
       return "Still proud of you.";
     case "pleading":
-      return `Still hoping you'll try ${status.waiting_on ?? "that shortcut"}...`;
+      return `Still hoping you'll try ${status.about ?? "that shortcut"}...`;
+    case "sad":
+      return `I've let ${status.about ?? "that one"} go. It's fine.`;
+    case "zipped":
+      return "Lips sealed.";
+    case "sideeye":
+      return "I saw that. Saying nothing.";
+    case "amazed":
+      return "You knew that one already?";
+    case "tired":
+      return "All talked out for today.";
+    case "hello":
+      return "Hi. I'm new here.";
+    case "zen":
+      return "Nothing to mention. Bliss.";
+    case "confused":
+      return "I can't read these menus.";
     default:
       return "Keeping an eye out.";
   }
