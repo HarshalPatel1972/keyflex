@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE27A"/>
+      <stop offset="1" stop-color="#FFC02E"/>
+    </linearGradient>
+    <clipPath id="left-eye"><ellipse cx="186" cy="214" rx="62" ry="70"/></clipPath>
+    <clipPath id="right-eye"><ellipse cx="326" cy="214" rx="62" ry="70"/></clipPath>
+  </defs>
+  <rect x="32" y="60" width="448" height="420" rx="112" fill="#C27F00"/>
+  <rect x="32" y="44" width="448" height="408" rx="112" fill="#F0A400"/>
+  <rect x="66" y="44" width="380" height="350" rx="88" fill="url(#top)"/>
+  <ellipse cx="124" cy="296" rx="30" ry="20" fill="#FF8A5C" opacity="0.5"/>
+  <ellipse cx="388" cy="296" rx="30" ry="20" fill="#FF8A5C" opacity="0.5"/>
+  <ellipse cx="186" cy="214" rx="62" ry="70" fill="#FFFFFF"/>
+  <polygon points="186.0,172.0 197.6,200.0 227.8,202.4 204.8,222.1 211.9,251.6 186.0,235.8 160.1,251.6 167.2,222.1 144.2,202.4 174.4,200.0" fill="#FF9F1C" stroke="#FF9F1C" stroke-width="8" stroke-linejoin="round"/>
+  <ellipse cx="326" cy="214" rx="62" ry="70" fill="#FFFFFF"/>
+  <polygon points="326.0,172.0 337.6,200.0 367.8,202.4 344.8,222.1 351.9,251.6 326.0,235.8 300.1,251.6 307.2,222.1 284.2,202.4 314.4,200.0" fill="#FF9F1C" stroke="#FF9F1C" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M134 112 Q180 92 226 112" fill="none" stroke="#9C6500" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M286 112 Q332 92 378 112" fill="none" stroke="#9C6500" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M200 294 Q256 376 312 294 Z" fill="#6B4300" stroke="#6B4300" stroke-width="14" stroke-linejoin="round"/>
+  <ellipse cx="256" cy="336" rx="24" ry="13" fill="#FF8A9A"/>
+  <path d="M420 66 C 425.72 86.28, 425.72 86.28, 446 92 C 425.72 97.72, 425.72 97.72, 420 118 C 414.28 97.72, 414.28 97.72, 394 92 C 414.28 86.28, 414.28 86.28, 420 66 Z" fill="#FFFFFF"/>
+  <path d="M96 88 C 99.52 100.48, 99.52 100.48, 112 104 C 99.52 107.52, 99.52 107.52, 96 120 C 92.48 107.52, 92.48 107.52, 80 104 C 92.48 100.48, 92.48 100.48, 96 88 Z" fill="#FFFFFF"/>
+</svg>
