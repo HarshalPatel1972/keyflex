@@ -6,10 +6,11 @@
 //!   keyflex-core --log FILE      also append those lines to FILE
 //!   keyflex-core --preview MOOD  show one sample popup with that face
 //!                                (any mood name, e.g. wink, grumpy, party) and wait
+//!   keyflex-core --why-quiet     say whether tips would be held back right now, and why
 
 use keyflex_core::engine::{Engine, Mood, Policy};
 use keyflex_core::platform::runtime::{self, Options};
-use keyflex_core::platform::watch;
+use keyflex_core::platform::{quiet, watch};
 use keyflex_core::rules;
 use keyflex_core::state::State;
 
@@ -35,6 +36,13 @@ fn sample(name: &str) -> Option<(Mood, &'static str, &'static str)> {
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.iter().any(|arg| arg == "--why-quiet") {
+        match quiet::reason() {
+            Some(reason) => println!("Keeping quiet: {reason}."),
+            None => println!("Free to pop up."),
+        }
+        return;
+    }
     let demo = args.iter().any(|arg| arg == "--demo");
     let verbose = args.iter().any(|arg| arg == "--verbose");
     let value_of = |flag: &str| args.iter().position(|arg| arg == flag).and_then(|at| args.get(at + 1));

@@ -23,6 +23,9 @@ it notices when you do something the long way and shows the shortcut for it.
   for the day, has let a shortcut go, or has had nothing to mention for a week
 - Limits on how often tips appear: a daily cap, a quiet gap, growing cooldowns,
   and retirement once a shortcut is learned
+- Silence while you present: nothing pops up over a fullscreen app or
+  slideshow, on a mirrored projector, or while an app is using the microphone
+  (a call, where screens get shared). The tip comes up later instead
 - "Don't show again" on every tip, per-app switches and Pause
 - Home, Shortcuts, How it works and Settings screens
 - Light and dark themes, following Windows by default
