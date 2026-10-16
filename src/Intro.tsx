@@ -48,7 +48,7 @@ const SCENES = [
   },
   {
     title: "A tip appears right there",
-    text: "Beside your cursor, where you're already looking. One line, then it gets out of your way.",
+    text: "Beside your cursor, where you're already looking. One line, then it gets out of your way. Never mid-presentation.",
   },
   {
     title: "Next time, two keys",

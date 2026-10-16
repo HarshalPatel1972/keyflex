@@ -64,6 +64,10 @@ A tip is only added when the shortcut is a real improvement. A one-click
 toolbar button is already as quick as its shortcut, so those tips appear only
 if you were typing a moment before and the mouse was the detour.
 
+Nothing pops up while a fullscreen app or slideshow is in front, while the
+screen is mirrored to a projector, or while an app is using the microphone (a
+call, where screens get shared). The tip comes up the next time instead.
+
 **Current limits**
 
 - Windows 10 and 11 only.

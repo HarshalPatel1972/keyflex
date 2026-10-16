@@ -1,6 +1,6 @@
 # Keyflex privacy policy
 
-_Last updated: 8 October 2026_
+_Last updated: 9 October 2026_
 
 Keyflex watches how you use your PC so it can suggest keyboard shortcuts. This
 page says exactly what it looks at, what it keeps, and what it never does.
@@ -15,8 +15,8 @@ page says exactly what it looks at, what it keeps, and what it never does.
 
 ## What Keyflex looks at
 
-To notice that you did something "the long way", Keyflex observes three things
-while it is running:
+To notice that you did something "the long way", and to stay out of the way at
+the wrong moment, Keyflex observes four things while it is running:
 
 1. **The button or menu item you click.** When you click, Keyflex asks Windows
    what kind of control is under the pointer. If it is a button or a menu item
@@ -42,6 +42,13 @@ while it is running:
    window, only to check whether it contains the words "Recycle Bin" (one tip
    depends on that). Titles are compared and discarded, never stored.
 
+4. **Whether now is a good moment.** Just before a tip would appear, Keyflex
+   asks Windows whether a fullscreen app or slideshow is in front, whether the
+   screen is mirrored to a projector, and whether any app is recording from a
+   microphone (a call, where screens are often shared). If so, the tip waits.
+   Keyflex never listens to the microphone itself; it only asks Windows whether
+   one is in use, and by which program. The answer is used once and discarded.
+
 ## What Keyflex stores
 
 Keyflex keeps one small file on your PC:
@@ -64,8 +71,8 @@ Deleting that file resets Keyflex. Uninstalling Keyflex and deleting the
 ## What Keyflex never does
 
 - It never sends any information anywhere. There is no server.
-- It never records keystrokes, text, passwords, clipboard contents or screen
-  images.
+- It never records keystrokes, text, passwords, clipboard contents, screen
+  images or sound.
 - It never reads web pages, documents, emails, messages or file names.
 - It never shares or sells data, because it has none to share.
 

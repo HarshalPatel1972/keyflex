@@ -362,18 +362,25 @@ unsafe fn is_taskbar(root: HWND) -> bool {
 unsafe fn window_exe(hwnd: HWND) -> String {
     let mut pid = 0u32;
     GetWindowThreadProcessId(hwnd, Some(&mut pid));
-    let Ok(process) = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) else {
-        return String::new();
-    };
-    let mut buf = [0u16; 1024];
-    let mut size = buf.len() as u32;
-    let found = QueryFullProcessImageNameW(process, PROCESS_NAME_WIN32, PWSTR(buf.as_mut_ptr()), &mut size);
-    let _ = CloseHandle(process);
-    if found.is_err() {
-        return String::new();
+    app_of_process(pid)
+}
+
+/// Lowercase exe name of a running process, or "" if it cannot be read.
+pub fn app_of_process(pid: u32) -> String {
+    unsafe {
+        let Ok(process) = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) else {
+            return String::new();
+        };
+        let mut buf = [0u16; 1024];
+        let mut size = buf.len() as u32;
+        let found = QueryFullProcessImageNameW(process, PROCESS_NAME_WIN32, PWSTR(buf.as_mut_ptr()), &mut size);
+        let _ = CloseHandle(process);
+        if found.is_err() {
+            return String::new();
+        }
+        let path = String::from_utf16_lossy(&buf[..size as usize]);
+        path.rsplit('\\').next().unwrap_or("").to_lowercase()
     }
-    let path = String::from_utf16_lossy(&buf[..size as usize]);
-    path.rsplit('\\').next().unwrap_or("").to_lowercase()
 }
 
 /// (lowercase exe name, title) of the active window.

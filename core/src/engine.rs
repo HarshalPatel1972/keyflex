@@ -451,6 +451,14 @@ impl Engine {
 
     /// Feed in what the user just did. `now` is seconds since the Unix epoch.
     pub fn handle(&mut self, event: &Event, now: u64) -> Option<Shown> {
+        self.handle_unless(event, now, || false)
+    }
+
+    /// [`Engine::handle`], but if something is about to be shown, `busy` is asked
+    /// first, and when it says yes, nothing is. What the user did still counts:
+    /// a shortcut is still used, a long way is still seen, and the tip can come
+    /// up the next time, when it is not busy.
+    pub fn handle_unless(&mut self, event: &Event, now: u64, busy: impl FnOnce() -> bool) -> Option<Shown> {
         if !self.is_watching(event.app) {
             return None;
         }
@@ -520,9 +528,14 @@ impl Engine {
         }
 
         if let Some((index, learned)) = cheer {
+            if busy() {
+                // No party mid-presentation, but the tray face is still proud.
+                self.state.last_cheer = now;
+                return None;
+            }
             return Some(self.cheer(index, learned, now));
         }
-        self.show(completed?, now)
+        self.show(completed?, now, busy)
     }
 
     /// Celebrate the user pressing a shortcut we taught them.
@@ -557,7 +570,7 @@ impl Engine {
     }
 
     /// Apply the policy to a rule whose steps were just completed.
-    fn show(&mut self, index: usize, now: u64) -> Option<Shown> {
+    fn show(&mut self, index: usize, now: u64, busy: impl FnOnce() -> bool) -> Option<Shown> {
         let Engine { rules, state, policy, dirty, .. } = self;
         let rule = &rules[index];
         let tips_so_far: u32 = state.tips.values().map(|tip| tip.shown).sum();
@@ -604,6 +617,11 @@ impl Engine {
             state.recent_shows.last().is_some_and(|&at| now.saturating_sub(at) < policy.min_gap_secs);
         let max_per_day = policy.max_per_day.unwrap_or(state.settings.tips_per_day);
         if too_soon || state.recent_shows.len() >= max_per_day {
+            return None;
+        }
+        // Everything says yes, except the moment. Keep the sighting, so it is
+        // ready to come up as soon as the user is free.
+        if busy() {
             return None;
         }
 
@@ -765,6 +783,30 @@ mod tests {
         };
         assert_eq!(engine.handle(&bold(false), 0), None, "browsing with the mouse: the button is fine");
         assert_eq!(engine.handle(&bold(true), 1).unwrap().id, "bold");
+    }
+
+    #[test]
+    fn a_busy_moment_holds_the_tip_back_without_forgetting_it() {
+        let mut engine = engine(Policy::default());
+        let busy = || true;
+        let never_asked = || panic!("only asked when something is about to pop up");
+
+        assert_eq!(engine.handle_unless(&click("chrome.exe", "", "settings", Control::MenuItem), 1000, never_asked), None);
+
+        // Presenting: the long way is seen, nothing pops up, nothing is used up.
+        assert_eq!(engine.handle_unless(&downloads(), 1000, busy), None);
+        let tip = &engine.state().tips["downloads"];
+        assert_eq!((tip.shown, tip.sightings), (0, 1));
+        assert!(engine.state().recent_shows.is_empty());
+
+        // Free again: the tip it held back comes up.
+        assert_eq!(engine.handle_unless(&downloads(), 1100, || false).unwrap().id, "downloads");
+
+        // Using the shortcut mid-call counts, without a party on screen.
+        assert_eq!(engine.handle_unless(&key("chrome.exe", "", "Ctrl+J"), 1200, busy), None);
+        assert_eq!(engine.state().tips["downloads"].used, 1);
+        assert_eq!(engine.state().cheers, 0);
+        assert_eq!(engine.status(1300).mood, Mood::Proud, "the tray face still noticed");
     }
 
     const HABIT_RULES: &str = r#"

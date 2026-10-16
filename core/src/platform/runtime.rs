@@ -9,7 +9,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::engine::{Engine, Mood};
-use crate::platform::popup;
+use crate::platform::{popup, quiet};
 use crate::platform::watch::{self, Inspector, Raw};
 use crate::rules::{self, Action, Event};
 use crate::state::Theme;
@@ -136,6 +136,15 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
 
     for raw in rx {
         let now = now();
+        // Only asked when a tip or a cheer is about to pop up.
+        let busy = || {
+            let reason = quiet::reason();
+            if let Some(reason) = &reason {
+                options.note(|| format!("    (kept quiet: {reason})"));
+            }
+            reason.is_some()
+        };
+        let ask = |event: &Event| handle.with(|engine| engine.handle_unless(event, now, busy));
 
         let shown = match raw {
             Raw::Click(point) => {
@@ -147,27 +156,27 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
                     options.note(|| format!("[{}] {:?} \"{}\"", clicked.app, clicked.control, clicked.name));
                     let action = Action::Click { name: &clicked.name, control: clicked.control };
                     let event = Event { app: &clicked.app, window: &window, typing, class: "", action };
-                    handle.with(|engine| engine.handle(&event, now))
+                    ask(&event)
                 })
             }
             Raw::Key(combo) => {
                 let (app, window) = watch::foreground();
                 let event =
                     Event { app: &app, window: &window, typing: false, class: "", action: Action::Key(combo) };
-                handle.with(|engine| engine.handle(&event, now))
+                ask(&event)
             }
             Raw::Held(combo) => {
                 let (app, window) = watch::foreground();
                 let typing = watch::was_typing();
                 options.note(|| format!("[{app}] held {}", combo.label()));
                 let event = Event { app: &app, window: &window, typing, class: "", action: Action::Held(combo) };
-                handle.with(|engine| engine.handle(&event, now))
+                ask(&event)
             }
             Raw::Minimized { hwnd } => {
                 let app = watch::app_of_window(hwnd);
                 options.note(|| format!("[{app}] minimised with the mouse"));
                 let event = Event { app: &app, window: "", typing: false, class: "", action: Action::Minimized };
-                handle.with(|engine| engine.handle(&event, now))
+                ask(&event)
             }
             Raw::Foreground { hwnd, by_mouse } => {
                 // A window never seen before counts as opened, if the mouse did it.
@@ -180,7 +189,7 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
                     if by_mouse && clicked_taskbar && !shell {
                         options.note(|| format!("[{app}] switched to from the taskbar"));
                         let event = Event { app: &app, window: "", typing: false, class: "", action: Action::Switched };
-                        handle.with(|engine| engine.handle(&event, now))
+                        ask(&event)
                     } else {
                         None
                     }
@@ -189,7 +198,7 @@ fn work(rx: Receiver<Raw>, handle: Handle) {
                     let class = watch::window_class(hwnd);
                     options.note(|| format!("[{app}] opened with the mouse ({class})"));
                     let event = Event { app: &app, window: "", typing: false, class: &class, action: Action::Opened };
-                    handle.with(|engine| engine.handle(&event, now))
+                    ask(&event)
                 } else {
                     None
                 }
